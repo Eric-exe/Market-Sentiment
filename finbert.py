@@ -1,12 +1,24 @@
+"""The Python file for finBERT sentiment analysis."""
+
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 
-# https://huggingface.co/ProsusAI/finbert
-tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
-model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+# https://huggingface.co/yiyanghkust/finbert-tone
 
-nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+NLP = None
 
-text = "Some financial text."
+def finbert_init():
+    """Initialize finBERT."""
+    tokenizer = AutoTokenizer.from_pretrained("yiyanghkust/finbert-tone")
+    model = AutoModelForSequenceClassification.from_pretrained("yiyanghkust/finbert-tone")
 
-results = nlp(text)
-print(results)
+    global NLP
+    NLP = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+
+def finbert_sentiment(text):
+    """Return the sentiment of the text."""
+    if NLP is None:
+        finbert_init()
+    results = NLP(text)
+    return results[0]
+
+print(finbert_sentiment("IBM stocks plummet"))
