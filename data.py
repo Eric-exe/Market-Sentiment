@@ -13,14 +13,19 @@ def read_csv(filename):
     
 def load_companies():
     """Return the companies from the CSV file and return it as a dictionary."""
-    companies = read_csv("data/companies.csv")
+    companies = read_csv("data/stock/companies.csv")
     companies.pop(0)
     companies = {company[0] : company[1] for company in companies}
     return companies
 
 def load_previous_closings():
     """Return the previous closing prices from the CSV file and return it as a dictionary."""
-    previous_closings = read_csv("data/previous_closings.csv")
+    previous_closings = read_csv("data/stock/previous_closings.csv")
+
+    # if the file is empty, return an empty dictionary
+    if (len(previous_closings) == 0):
+        return {}
+    
     previous_closings.pop(0)
     previous_closings = {company[0] : company[2:] for company in previous_closings}
     return previous_closings

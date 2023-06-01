@@ -1,0 +1,5 @@
+# Set the default line ending normalization behavior for all text files
+* text=auto
+
+# Treat binary files as binary
+*.ico binary
