@@ -13,7 +13,7 @@ def read_csv(filename):
     
 def load_companies():
     """Return the companies from the CSV file and return it as a dictionary."""
-    companies = read_csv("data/stock/companies.csv")
+    companies = read_csv("data/companies.csv")
     companies.pop(0)
     companies = {company[0] : company[1] for company in companies}
     return companies
