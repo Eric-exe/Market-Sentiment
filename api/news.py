@@ -1,4 +1,7 @@
-"""This file processes the news data and saves it to a JSON file."""
+"""
+This file processes the news data and returns the sentiment score for said company.
+It also saves the data to a JSON file for later use.
+"""
 
 # API: https://www.marketaux.com/documentation
 
@@ -12,12 +15,14 @@ import requests
 class News:
     """The class for getting the news information and their sentiments."""
 
-    def __init__(self):
+    def __init__(self, companies):
+
+        self.companies = companies
 
         self.api_token = os.getenv("MARKETAUX_API_TOKEN")
 
         config = configparser.ConfigParser()
-        config.read("config.ini")
+        config.read("api/config.ini")
 
         self.sentiment_range = [
             config["SENTIMENT_RANGE"]["WEAK_BEGIN"],
@@ -44,7 +49,7 @@ class News:
               "symbols=" + ticker + \
               "&filter_entities=true" + \
               "&published_after=" + \
-              (datetime.today() - timedelta(days=self.days_range)).strftime("%Y-%m-%d") + \
+              (datetime.today() - timedelta(days=int(self.days_range))).strftime("%Y-%m-%d") + \
               "&sort=published_on" + \
               "&api_token=" + self.api_token
 
@@ -70,7 +75,7 @@ class News:
 
         # send the requests
         for url in urls:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=60)
 
             if response.status_code != 200:
                 print("Error: " + str(response.status_code))
@@ -86,10 +91,10 @@ class News:
         # save the data to a JSON file
 
         # check if the directory exists
-        if not os.path.exists("data/news"):
-            os.mkdir("data/news")
+        if not os.path.exists("api/data/news"):
+            os.mkdir("api/data/news")
 
-        with open("data/news/" + ticker + ".json", "w", encoding="utf-8") as file:
+        with open("api/data/news/" + ticker + ".json", "w", encoding="utf-8") as file:
             json.dump({
                 "time": str(datetime.today().date()),
                 "article_counts": article_counts,
@@ -97,17 +102,17 @@ class News:
             }, file, indent=4)
 
     def load_news(self, ticker):
-        """Load the news data for said company."""
+        """Load the news data for said company. Use this function instead of get_news()"""
 
         # check if the directory exists
-        if not os.path.exists("data/news"):
-            os.mkdir("data/news")
+        if not os.path.exists("api/data/news"):
+            os.mkdir("api/data/news")
 
         # check if the file exists
-        if not os.path.exists("data/news/" + ticker + ".json"):
+        if not os.path.exists("api/data/news/" + ticker + ".json"):
             self.get_news(ticker)
 
-        with open("data/news/" + ticker + ".json", "r", encoding="utf-8") as file:
+        with open("api/data/news/" + ticker + ".json", "r", encoding="utf-8") as file:
             data = json.load(file)
             if data["time"] != str(datetime.today().date()):
                 print("Updating news data for " + ticker + "...")
@@ -115,7 +120,6 @@ class News:
                 return self.load_news(ticker)
 
             return [data["article_counts"], data["articles"]]
-
 
     def get_sentiment(self, ticker):
         """Return a sentiment score for said company."""
@@ -136,9 +140,10 @@ class News:
                             (data[0][2] + data[0][5]) * int(self.sentiment_weight[2]) +
                             int(self.bayesian_extra_values))
 
-
         return [sentiment_score, sum(data[0])]
 
-
-news = News()
-print(news.get_sentiment("MSFT"))
+    def save_news(self):
+        """Save the news data for all companies."""
+        # create a new directory
+        for ticker in self.companies:
+            self.load_news(ticker)

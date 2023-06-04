@@ -49,15 +49,13 @@ class Stock:
 
     def __init__(self):
         """Initialize the Stock class."""
-        self.companies = None
+        self.companies = None # {name : ticker}
         self.previous_closings = None
         self.current_prices = None
         self.previous_closing_date = None
         self.current_prices_date = None
 
         self.get_companies()
-        self.save_previous_closings()
-        self.save_current_prices()
 
     def get_companies(self):
         """Return the company data."""
@@ -73,27 +71,25 @@ class Stock:
         self.previous_closing_date = str(datetime.today().date())
 
         # check if stock directory exists
-        if not os.path.isdir("data/stock"):
-            os.mkdir("data/stock")
+        if not os.path.isdir("api/data/stock"):
+            os.mkdir("api/data/stock")
 
-        if not os.path.isfile("data/stock/stats"):
-            with open("data/stock/stats", "w", encoding="utf-8") as file:
+        if not os.path.isfile("api/data/stock/stats"):
+            with open("api/data/stock/stats", "w", encoding="utf-8") as file:
                 file.write("Last previous closings logged: " + self.previous_closing_date + "\n" +
                            "Last current prices logged: ")
 
         # if file exists, read the date and compare to today's date
         else:
-            with open("data/stock/stats", "r", encoding="utf-8") as file:
-                date_previous = file.readline().split(
-                    "\n")[0].split(": ")[1].strip()
-                date_current = file.readline().split(
-                    "\n")[0].split(": ")[1].strip()
+            with open("api/data/stock/stats", "r", encoding="utf-8") as file:
+                date_previous = file.readline().split("\n")[0].split(": ")[1].strip()
+                date_current = file.readline().split("\n")[0].split(": ")[1].strip()
 
                 if date_previous == self.previous_closing_date:
                     # save stats to COMPANY_PREVIOUS_CLOSINGS
-                    with open("data/stock/previous_closings.csv", "r", encoding="utf-8") as file:
+                    with open("api/data/stock/previous_closings.csv", "r", encoding="utf-8") as file:
                         previous_closing_data = data.read_csv(
-                            "data/stock/previous_closings.csv")
+                            "api/data/stock/previous_closings.csv")
                         previous_closing_data.pop(0)
                         for company in previous_closing_data:
                             ticker = company[1]
@@ -102,7 +98,7 @@ class Stock:
 
                 else:
                     # update the date
-                    with open("data/stock/stats", "w", encoding="utf-8") as file:
+                    with open("api/data/stock/stats", "w", encoding="utf-8") as file:
                         file.write("Last previous closings logged: " +
                                    self.previous_closing_date +
                                    "\n" +
@@ -151,18 +147,16 @@ class Stock:
             # save to COMPANY_PREVIOUS_CLOSINGS
             self.previous_closings[ticker] = previous_closing_prices[company]
 
-        data.save_data("data/stock/previous_closings.csv",
+        data.save_data("api/data/stock/previous_closings.csv",
                        header, previous_closing_prices_list)
 
     def save_current_prices(self):
         """Save the current prices of the companies. Should update every 10 minutes."""
 
         # read the last time the current prices were logged
-        with open("data/stock/stats", "r", encoding="utf-8") as file:
-            date_previous = file.readline().split(
-                "\n")[0].split(": ")[1].strip()
-            date_current = file.readline().split(
-                "\n")[0].split(": ")[1].strip()
+        with open("api/data/stock/stats", "r", encoding="utf-8") as file:
+            date_previous = file.readline().split("\n")[0].split(": ")[1].strip()
+            date_current = file.readline().split("\n")[0].split(": ")[1].strip()
 
             if date_current == "":
                 date_current = "1970-01-01 00:00:00.000000"
@@ -178,9 +172,9 @@ class Stock:
             if difference < timedelta(minutes=10):
                 # current prices last logged less than 10 minutes ago, we don't need to update
                 # save stats into COMPANY_CURRENT_PRICES
-                with open("data/stock/current_prices.csv", "r", encoding="utf-8") as file:
+                with open("api/data/stock/current_prices.csv", "r", encoding="utf-8") as file:
                     current_price_data = data.read_csv(
-                        "data/stock/current_prices.csv")
+                        "api/data/stock/current_prices.csv")
                     current_price_data.pop(0)
                     for company in current_price_data:
                         ticker = company[1]
@@ -188,7 +182,7 @@ class Stock:
                     return
 
             # update the time
-            with open("data/stock/stats", "w", encoding="utf-8") as file:
+            with open("api/data/stock/stats", "w", encoding="utf-8") as file:
                 self.current_prices_date = str(datetime.today().now())
                 file.write("Last previous closings logged: " + date_previous + "\n" +
                            "Last current prices logged: " + self.current_prices_date)
@@ -210,8 +204,13 @@ class Stock:
             current_prices_list.append(
                 [company[0], self.companies[company[0]], company[1]])
 
-        data.save_data("data/stock/current_prices.csv",
+        data.save_data("api/data/stock/current_prices.csv",
                        header, current_prices_list)
 
 
-stock = Stock()
+    def get_companies_tickers(self):
+        """Return the list of company tickers."""
+        values = []
+        for company in self.companies:
+            values.append(self.companies[company])
+        return values
