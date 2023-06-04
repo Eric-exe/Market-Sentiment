@@ -34,13 +34,18 @@ class News:
             config["SENTIMENT_WEIGHT"]["STRONG"]
         ]
 
+        self.days_range = config["MISC"]["DAYS_RANGE"]
+        self.bayesian_extra_values = config["MISC"]["BAYESIAN_EXTRA_VALUES"]
+
     def get_news(self, ticker):
         """Return the news data for said company."""
         # build the request
         url = "https://api.marketaux.com/v1/news/all?" + \
               "symbols=" + ticker + \
               "&filter_entities=true" + \
-              "&published_after=" + (datetime.today() - timedelta(days=14)).strftime("%Y-%m-%d") + \
+              "&published_after=" + \
+              (datetime.today() - timedelta(days=self.days_range)).strftime("%Y-%m-%d") + \
+              "&sort=published_on" + \
               "&api_token=" + self.api_token
 
         urls = []
@@ -112,5 +117,28 @@ class News:
             return [data["article_counts"], data["articles"]]
 
 
+    def get_sentiment(self, ticker):
+        """Return a sentiment score for said company."""
+        # load the news data
+        data = self.load_news(ticker)
+
+        # calculate the sentiment score
+        sentiment_score = 0
+        for i in range(3):
+            sentiment_score += data[0][i] * int(self.sentiment_weight[i])
+
+        for i in range(3):
+            sentiment_score -= data[0][i + 3] * int(self.sentiment_weight[i])
+
+        # normalize the sentiment score and add the extra bayesian values
+        sentiment_score /= ((data[0][0] + data[0][3]) * int(self.sentiment_weight[0]) +
+                            (data[0][1] + data[0][4]) * int(self.sentiment_weight[1]) +
+                            (data[0][2] + data[0][5]) * int(self.sentiment_weight[2]) +
+                            int(self.bayesian_extra_values))
+
+
+        return [sentiment_score, sum(data[0])]
+
+
 news = News()
-news.load_news("MSFT")
+print(news.get_sentiment("MSFT"))
