@@ -1,5 +1,6 @@
 .env
 __pycache__/
 .vscode/
-data/news/
-data/stock/
+api/data/news/
+api/data/stock/
+.vercel
