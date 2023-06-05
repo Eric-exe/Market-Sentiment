@@ -1,44 +1,25 @@
-"""The Python file for reading the CSV files and writing down information."""
-
-import csv
-import os
-
-
-def read_csv(filename):
-    """Return the contents of the CSV file if it exists. Else, return an empty list."""
-    if os.path.exists(filename):
-        with open(filename, "r", encoding="utf-8") as file:
-            reader = csv.reader(file)
-            return list(reader)
-    return []
+"""
+This class stores all the information for the companies and their stocks,
+as well as the news data and their sentiments.
+"""
 
 
-def load_companies():
-    """Return the companies from the CSV file and return it as a dictionary."""
-    companies = read_csv("api/data/companies.csv")
-    companies.pop(0)
-    companies = {company[0]: company[1] for company in companies}
-    return companies
+class Data:
+    """This class stores all the information for the companies and their stocks,
+        as well as the news data and their sentiments."""
 
+    def __init__(self):
+        self.companies = None  # dict {name : ticker}
+        self.tickers = None  # list [ticker]
 
-def load_previous_closings():
-    """Return the previous closing prices from the CSV file and return it as a dictionary."""
-    previous_closings = read_csv("api/data/stock/previous_closings.csv")
+        # dict {ticker : [previous_closings]}, 14 days
+        self.previous_closings = None
+        self.previous_closings_date_logged = None  # datetime, last logged
 
-    # if the file is empty, return an empty dictionary
-    if len(previous_closings) == 0:
-        return {}
+        self.current_prices = None  # dict {ticker : current_price}
+        self.current_prices_date_logged = None  # datetime, last logged
 
-    previous_closings.pop(0)
-    previous_closings = {company[0]: company[2:]
-                         for company in previous_closings}
-    return previous_closings
-
-
-def save_data(filename, header, data):
-    """Save the data to the CSV file."""
-    with open(filename, "w", encoding="utf-8", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(header)
-        writer.writerows(data)
-        file.close()
+        self.news = None  # dict {ticker : [news]}
+        self.sentiment = None  # dict {ticker : sentiment}
+        self.news_count = None  # dict {ticker : [news_count]}
+        self.news_date_logged = None  # dict {ticker : datetime}, last logged

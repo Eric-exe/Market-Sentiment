@@ -6,18 +6,22 @@ It also saves the data to a JSON file for later use.
 # API: https://www.marketaux.com/documentation
 
 import os
+import time
 import configparser
 from datetime import datetime, timedelta
-import json
 import requests
 
 
 class News:
     """The class for getting the news information and their sentiments."""
 
-    def __init__(self, companies):
+    def __init__(self, data):
 
-        self.companies = companies
+        self.data = data
+        self.data.news = {}
+        self.data.sentiment = {}
+        self.data.news_count = {}
+        self.data.news_date_logged = {}
 
         self.api_token = os.getenv("MARKETAUX_API_TOKEN")
 
@@ -88,62 +92,47 @@ class News:
             article_counts.append(data["meta"]["found"])
             articles.append(data["data"])
 
-        # save the data to a JSON file
+            # wait for 1 second to avoid rate limit
+            time.sleep(1)
 
-        # check if the directory exists
-        if not os.path.exists("api/data/news"):
-            os.mkdir("api/data/news")
-
-        with open("api/data/news/" + ticker + ".json", "w", encoding="utf-8") as file:
-            json.dump({
-                "time": str(datetime.today().date()),
-                "article_counts": article_counts,
-                "articles": articles
-            }, file, indent=4)
+        self.data.news[ticker] = articles
+        self.data.news_count[ticker] = article_counts
+        self.data.news_date_logged[ticker] = datetime.today().date()
+        self.data.sentiment[ticker] = self.get_sentiment(article_counts)
 
     def load_news(self, ticker):
         """Load the news data for said company. Use this function instead of get_news()"""
+        # check if the news data is already loaded
+        if ticker in self.data.news_date_logged:
+            # check if the news data is up to date
+            if self.data.news_date_logged[ticker] == datetime.today().date():
+                return [self.data.news_count[ticker], self.data.news[ticker]]
 
-        # check if the directory exists
-        if not os.path.exists("api/data/news"):
-            os.mkdir("api/data/news")
+        self.get_news(ticker)
+        return [self.data.sentiment[ticker], self.data.news[ticker]]
 
-        # check if the file exists
-        if not os.path.exists("api/data/news/" + ticker + ".json"):
-            self.get_news(ticker)
-
-        with open("api/data/news/" + ticker + ".json", "r", encoding="utf-8") as file:
-            data = json.load(file)
-            if data["time"] != str(datetime.today().date()):
-                print("Updating news data for " + ticker + "...")
-                self.get_news(ticker)
-                return self.load_news(ticker)
-
-            return [data["article_counts"], data["articles"]]
-
-    def get_sentiment(self, ticker):
-        """Return a sentiment score for said company."""
-        # load the news data
-        data = self.load_news(ticker)
-
+    def get_sentiment(self, sentiments):
+        """Return a sentiment score given article counts."""
+        data = sentiments
         # calculate the sentiment score
         sentiment_score = 0
         for i in range(3):
-            sentiment_score += data[0][i] * int(self.sentiment_weight[i])
+            sentiment_score += data[i] * int(self.sentiment_weight[i])
 
         for i in range(3):
-            sentiment_score -= data[0][i + 3] * int(self.sentiment_weight[i])
+            sentiment_score -= data[i + 3] * int(self.sentiment_weight[i])
 
         # normalize the sentiment score and add the extra bayesian values
-        sentiment_score /= ((data[0][0] + data[0][3]) * int(self.sentiment_weight[0]) +
-                            (data[0][1] + data[0][4]) * int(self.sentiment_weight[1]) +
-                            (data[0][2] + data[0][5]) * int(self.sentiment_weight[2]) +
+        sentiment_score /= ((data[0] + data[3]) * int(self.sentiment_weight[0]) +
+                            (data[1] + data[4]) * int(self.sentiment_weight[1]) +
+                            (data[2] + data[5]) * int(self.sentiment_weight[2]) +
                             int(self.bayesian_extra_values))
 
-        return [sentiment_score, sum(data[0])]
+        return sentiment_score
 
     def save_news(self):
-        """Save the news data for all companies."""
-        # create a new directory
-        for ticker in self.companies:
+        """Update the news data for all companies."""
+        for ticker in self.data.tickers:
+            if ticker in self.data.news_date_logged:
+                continue
             self.load_news(ticker)
