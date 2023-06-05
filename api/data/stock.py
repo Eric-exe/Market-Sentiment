@@ -21,24 +21,6 @@ def get_stock_previous_close(info):
     """Return the stock previous close from the API."""
     return info["previousClose"]
 
-
-def get_stock_change(info):
-    """Return the stock change percentage from the API."""
-    return round(
-        (get_stock_price(info) - get_stock_previous_close(info)) /
-        get_stock_previous_close(info) * 100,
-        2)
-
-
-def get_five_day_stock_change(info, previous_closings):
-    """Return the stock change percentage from the COMPANY_STATS if applicable. Else, return -1."""
-    current_price = get_stock_price(info)
-    previous_closings = previous_closings[info["symbol"]]
-    if len(previous_closings) == 14:
-        previous_closing = previous_closings[0]
-        return round((current_price - previous_closing) / previous_closing * 100, 2)
-    return -1
-
 # ==================================================================================================
 
 
@@ -69,7 +51,10 @@ class Stock:
                 company_info = company.split(",")
                 name = company_info[0]
                 ticker = company_info[1]
+                # create a two-way dictionary
                 self.data.companies[name] = ticker
+                self.data.companies[ticker] = name
+
                 self.data.tickers.append(ticker)
 
         self.data.previous_closings = {}
@@ -108,3 +93,19 @@ class Stock:
                 info = get_stock_info(ticker)
                 current_price = get_stock_price(info)
                 self.data.current_prices[ticker] = current_price
+
+    def get_stock_change(self, ticker):
+        """Return the stock change percentage."""
+        current_price = self.data.current_prices[ticker]
+        previous_close = self.data.previous_closings[ticker][0]
+        return round((current_price - previous_close) / previous_close * 100, 2)
+
+    def get_five_day_stock_change(self, ticker):
+        """Return the stock change percentage over 5 days."""
+        current_price = self.data.current_prices[ticker]
+        previous_closings = self.data.previous_closings[ticker]
+        if len(previous_closings) < 5:
+            return -1
+        else:
+            return round((current_price - previous_closings[4]) / previous_closings[4] * 100, 2)
+        
