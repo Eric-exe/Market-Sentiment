@@ -1,11 +1,12 @@
 """Main file for the project."""
 
 import os
-from data import data
-from data import stock
-from data import news
 from flask import Flask, render_template
 from apscheduler.schedulers.background import BackgroundScheduler
+import yfinance as yf
+import data.data as data
+import data.stock as stock
+import data.news as news
 
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
@@ -15,13 +16,13 @@ stock = stock.Stock(data)
 news = news.News(data)
 
 # ==============================================================================
-
-
 def update_data():
     """Update the stock data."""
     stock.save_previous_closings()
     stock.save_current_prices()
     # news.save_news()
+
+update_data() # update the data when the server starts
 # ==============================================================================
 
 
@@ -70,7 +71,7 @@ def get_stock_data():
         "previous_closings_date_logged": str(previous_closings_date_logged),
         "current_prices_date_logged": str(current_prices_date_logged)
     }
-
+    
     for ticker in tickers:
         response[ticker] = {
             "company": companies[ticker],
@@ -93,10 +94,10 @@ def main():
                                 Create the .env file and add the following:
                                 \nMARKETAUX_API_TOKEN=your_api_token""")
 
+# run update_data() every 10 minutes
+scheduler.add_job(func=update_data, trigger="interval", minutes=10)
+scheduler.start()
 
 if __name__ == "__main__":
     main()
-    scheduler.add_job(func=update_data, trigger="interval", minutes=10)
-    scheduler.start()
-    update_data() # update the data when the server starts
     app.run()

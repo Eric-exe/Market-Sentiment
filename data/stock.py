@@ -44,7 +44,7 @@ class Stock:
         self.data.companies = {}
         self.data.tickers = []
         # read the company data from the CSV file
-        with open('api/data/companies.csv', 'r', encoding="utf-8") as file:
+        with open('data/companies.csv', 'r', encoding="utf-8") as file:
             data = file.read().split("\n")
             data.pop(0)  # remove header
             for company in data:
