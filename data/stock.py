@@ -65,10 +65,10 @@ class Stock:
                 self.data.previous_closing[ticker] = self.data.ticker_data.price[ticker]["regularMarketPreviousClose"]
 
     def save_current_prices(self):
-        """Save the current prices of the companies. Should update every minute."""
+        """Save the current prices of the companies. Should update every 30 seconds."""
         if (self.data.current_prices_date_logged is None or
                 datetime.today().now() - self.data.current_prices_date_logged >=
-                timedelta(minutes=1)):
+                timedelta(seconds=30)):
 
             self.data.current_prices_date_logged = datetime.today().now()
             for ticker in self.data.tickers:
@@ -79,3 +79,70 @@ class Stock:
         current_price = self.data.current_prices[ticker]
         previous_closing = self.data.previous_closing[ticker]
         return (current_price - previous_closing) / previous_closing * 100
+
+    def get_stock_data(self):
+        """Return the stock data in a dictionary."""
+        request_time = datetime.today().now()
+
+        response = {
+            "meta": {},
+            "data": {}
+        }
+
+        response["meta"]["request_time"] = str(request_time)
+        response["meta"]["current_prices_date_logged"] = str(
+            self.data.current_prices_date_logged)
+        response["meta"]["closings_date_logged"] = str(
+            self.data.closings_date_logged)
+
+        for ticker in self.data.tickers:
+            response["data"][ticker] = {
+                "company": self.data.companies[ticker],
+                "current_price": self.data.current_prices[ticker],
+                "previous_closing_price": self.data.previous_closing[ticker],
+                "change": self.get_stock_change(ticker),
+                "closings_prices": {}
+            }
+
+            for closing in self.data.closings[ticker]:
+                response["data"][ticker]["closings_prices"][closing[0]] = closing[1]
+
+        return response
+
+    def load_stock_data(self, database):
+        """Loads the stock data from firebase"""
+        # check if the stock data in firebase is recent
+        meta = database.get_stock_meta()
+        if meta is None:
+            return
+
+        current_prices_date_logged = datetime.strptime(meta.get("current_prices_date_logged"), "%Y-%m-%d %H:%M:%S.%f")
+        closings_date_logged = datetime.strptime(meta.get("previous_closing_date_logged"), "%Y-%m-%d %H:%M:%S.%f")
+
+        if (current_prices_date_logged is None or
+                datetime.today().now() - current_prices_date_logged >= timedelta(seconds=30)):
+            return
+
+        if (closings_date_logged is None or
+                datetime.today().now() - closings_date_logged >= timedelta(minutes=60)):
+            return
+
+        # it is recent, so load the data
+        data = database.get_stock_data()
+        # the keys are the tickers
+        for ticker in data.keys():
+            self.data.tickers.append(ticker)
+
+            self.data.companies[ticker] = data[ticker]["company"]
+            self.data.companies[data[ticker]["company"]] = ticker
+
+            self.data.current_prices[ticker] = data[ticker]["current_price"]
+
+            self.data.previous_closing[ticker] = data[ticker]["previous_closing_price"]
+
+            self.data.closings[ticker] = []
+            for date, price in data[ticker]["closings_prices"].items():
+                self.data.closings[ticker].append([date, price])
+
+            self.data.closings_date_logged = closings_date_logged
+            self.data.current_prices_date_logged = current_prices_date_logged
