@@ -57,15 +57,14 @@ def get_stock_data():
     for ticker in data.tickers:
         response[ticker] = {
             "company": data.companies[ticker],
-            "previous_closing_price": data.previous_closing[ticker], 
-            "closings": {},
-            "current_closing_date": str(data.closings_company_date_logged[ticker]),
+            "previous_closing_price": data.previous_closing[ticker],
+            "closings_prices": {},
             "current_price": data.current_prices[ticker],
             "change": stock.get_stock_change(ticker)
         }
         for closing in data.closings[ticker]:
             # assign the date as the key and the closing price as the value
-            response[ticker]["closings"][closing[0]] = closing[1]
+            response[ticker]["closings_prices"][closing[0]] = closing[1]
 
     return response
 

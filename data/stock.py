@@ -1,33 +1,7 @@
 """This file gets the stock information from the API yfinance and saves it to a CSV file."""
 
 from datetime import datetime, timedelta
-import yfinance as yf
-
-# ==================================================================================================
-# yfinance API
-
-
-def get_stock_info(ticker):
-    """Return the stock information from the API."""
-    return yf.Ticker(ticker).info
-
-
-def get_stock_price(info):
-    """Return the stock price from the API."""
-    return info["currentPrice"]
-
-
-def get_stock_previous_close(info):
-    """Return the stock previous close from the API."""
-    return info["previousClose"]
-
-def get_stock_close_date(ticker):
-    """Return the stock previous close date from the API."""
-    ticker_info = yf.Ticker(ticker)
-    history = ticker_info.history(period="1d")
-    return history.index[-1].strftime("%Y-%m-%d")
-
-# ==================================================================================================
+from yahooquery import Ticker
 
 
 class Stock:
@@ -57,6 +31,8 @@ class Stock:
         self.data.closings = {}
         self.data.current_prices = {}
 
+        self.data.ticker_data = Ticker(self.data.tickers)
+
     def save_closings_prices(self):
         """Save the previous closing prices of the companies."""
 
@@ -71,47 +47,35 @@ class Stock:
 
             # process the closing prices
             for ticker in self.data.tickers:
-                # compare the closing date with the current date
-                close_date = self.data.closings_company_date_logged.get(ticker)
-                current_close_date = get_stock_close_date(ticker)
+                self.data.closings[ticker] = []
 
-                if (close_date is None
-                    or close_date != current_close_date):
-                    # get the closing prices for the last 14 trading days
-                    stock = yf.Ticker(ticker)
-                    closings_data = stock.history(period="14d")['Close']
-                    closings_list = [
-                        [str(date.date()), price] for date, price in closings_data.items()
-                    ]
+                # get the closing prices for the last 14 days
+                history = Ticker(ticker).history(period="15d")
+                closing_prices = history.reset_index(
+                )[["date", "close"]].values.tolist()
+                # convert the date to string
+                closing_prices = [[str(date), price]
+                                  for date, price in closing_prices]
+                # pop the last closing price, which is today's closing price
+                closing_prices.pop()
 
-                    # reverse the list so that the most recent date is first
-                    closings_list.reverse()
+                self.data.closings[ticker] = closing_prices
 
-                    # update the closing prices
-                    self.data.closings[ticker] = closings_list
-
-                    # upadte the previous closing price
-                    self.data.previous_closing[ticker] = get_stock_previous_close(stock.info)
-
-                    # update the closing date logged
-                    self.data.closings_company_date_logged[ticker] = current_close_date
-
+                # update the previous closing price
+                self.data.previous_closing[ticker] = self.data.ticker_data.price[ticker]["regularMarketPreviousClose"]
 
     def save_current_prices(self):
-        """Save the current prices of the companies. Should update every 10 minutes."""
+        """Save the current prices of the companies. Should update every minute."""
         if (self.data.current_prices_date_logged is None or
                 datetime.today().now() - self.data.current_prices_date_logged >=
-                timedelta(minutes=10)):
+                timedelta(minutes=1)):
 
             self.data.current_prices_date_logged = datetime.today().now()
             for ticker in self.data.tickers:
-                info = get_stock_info(ticker)
-                current_price = get_stock_price(info)
-                self.data.current_prices[ticker] = current_price
+                self.data.current_prices[ticker] = self.data.ticker_data.price[ticker]["regularMarketPrice"]
 
     def get_stock_change(self, ticker):
         """Return the stock change percentage."""
         current_price = self.data.current_prices[ticker]
         previous_closing = self.data.previous_closing[ticker]
         return (current_price - previous_closing) / previous_closing * 100
-        
