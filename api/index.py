@@ -2,11 +2,12 @@
 
 import os
 import json
-from datetime import datetime
+from dotenv import load_dotenv
 from flask import Flask, render_template, Response
 import data.data as data
 import data.stock as stock
 import data.news as news
+import data.firebase_db as firebase_db
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ data = data.Data()  # this is where all the data is stored
 stock = stock.Stock(data)
 news = news.News(data)
 
+db = firebase_db.FirebaseDB()
 # ==============================================================================
 
 
@@ -48,43 +50,35 @@ def scripts():
 @app.route("/api/stock_data", methods=["GET"])
 def get_stock_data():
     """Return company info, ticker, previous closing prices, and current prices."""
-
-    request_time = datetime.today().now()
-
     update_stock_data()
-    
-    response = {
-        "meta": {},
-        "data": {}
-    }
 
-    response["meta"]["request_time"] = str(request_time)
-    response["meta"]["current_prices_date_logged"] = str(data.current_prices_date_logged)
-    response["meta"]["previous_closing_date_logged"] = str(data.closings_date_logged)
+    response = stock.get_stock_data()
+    # update firebase db
+    db.update_stock_data(response)
 
-    for ticker in data.tickers:
-        response["data"][ticker] = {
-            "company": data.companies[ticker],
-            "current_price": data.current_prices[ticker],
-            "previous_closing_price": data.previous_closing[ticker],
-            "change": stock.get_stock_change(ticker),
-            "closings_prices": {}
-        }
-
-        for closing in data.closings[ticker]:
-            response["data"][ticker]["closings_prices"][closing[0]] = closing[1]
-
-    return Response(json.dumps(response), mimetype='application/json')
+    return Response(json.dumps(response), mimetype="application/json")
 
 
 def main():
     """Main function."""
+
+    load_dotenv()
     # check if .env exists
     if not os.path.exists(".env"):
         # throw an error
-        raise FileNotFoundError("""The .env file does not exist.
-                                Create the .env file and add the following:
-                                \nMARKETAUX_API_TOKEN=your_api_token""")
+        raise FileNotFoundError(
+            """The .env file does not exist. Create the .env file and add the following:\n\n
+
+            MARKETAUX_API_TOKEN=your_api_token\n
+            FIREBASE_DB_URL=your_firebase_db_url\n\n
+
+            To get the Marketaux API token, sign up at https://marketaux.com.\n\n
+
+            To get the Firebase DB URL, sign up at https://firebase.google.com.\n
+            Create a project and add a realtime database. Then, copy the URL of the realtime database.\n\n
+
+            Place the .env file in the root directory of the project."""
+        )
 
 
 if __name__ == "__main__":
