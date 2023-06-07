@@ -1,7 +1,6 @@
 """This file connects to the Firebase database and saves the data to Firebase realtime database."""
 
 import os
-import json
 from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials
@@ -12,7 +11,22 @@ class FirebaseDB:
     def __init__(self):
         """Initialize the FirebaseDB class."""
         load_dotenv()
-        cred = credentials.Certificate(json.loads(os.getenv("FIREBASE_CREDS")))
+
+        # check if serviceAccountKey.json exists
+        if not os.path.exists("serviceAccountKey.json"):
+            # throw an error
+            raise FileNotFoundError(
+            """The serviceAccountKey.json file does not exist. Create the serviceAccountKey.json file:\n
+            1. Go to the Firebase console\n
+            2. Click on the project\n
+            3. Click on the gear icon and select Project Settings\n
+            4. Click on the Service Accounts tab\n
+            5. Click on the Generate new private key button\n
+            6. Rename the downloaded JSON file to serviceAccountKey.json\n
+            7. Place the serviceAccountKey.json file in the root directory of the project."""
+            )
+        
+        cred = credentials.Certificate("serviceAccountKey.json")
 
         # initialize the app with a service account, granting admin privileges
         firebase_admin.initialize_app(cred, {
