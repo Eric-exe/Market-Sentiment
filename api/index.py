@@ -2,7 +2,6 @@
 
 import os
 import json
-from dotenv import load_dotenv
 from flask import Flask, render_template, Response
 import data.data as data
 import data.stock as stock
@@ -21,6 +20,7 @@ db = firebase_db.FirebaseDB()
 
 def update_stock_data():
     """Update the stock data."""
+    stock.load_stock_data(db)
     stock.save_closings_prices()
     stock.save_current_prices()
 
@@ -61,8 +61,6 @@ def get_stock_data():
 
 def main():
     """Main function."""
-
-    load_dotenv()
     # check if .env exists
     if not os.path.exists(".env"):
         # throw an error

@@ -9,6 +9,7 @@ import os
 import time
 import configparser
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 import requests
 
 
@@ -23,6 +24,7 @@ class News:
         self.data.news_count = {}
         self.data.news_date_logged = {}
 
+        load_dotenv()
         self.api_token = os.getenv("MARKETAUX_API_TOKEN")
 
         config = configparser.ConfigParser()
