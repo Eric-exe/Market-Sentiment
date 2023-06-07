@@ -1,7 +1,9 @@
 """Main file for the project."""
 
 import os
-from flask import Flask, render_template
+import json
+from datetime import datetime
+from flask import Flask, render_template, Response
 import data.data as data
 import data.stock as stock
 import data.news as news
@@ -43,30 +45,36 @@ def scripts():
 # GET Requests
 
 
-@app.route("/api/stock_data")
+@app.route("/api/stock_data", methods=["GET"])
 def get_stock_data():
     """Return company info, ticker, previous closing prices, and current prices."""
 
-    update_stock_data()
+    request_time = datetime.today().now()
 
+    update_stock_data()
+    
     response = {
-        "previous_closings_date_logged": str(data.closings_date_logged),
-        "current_prices_date_logged": str(data.current_prices_date_logged)
+        "meta": {},
+        "data": {}
     }
 
-    for ticker in data.tickers:
-        response[ticker] = {
-            "company": data.companies[ticker],
-            "previous_closing_price": data.previous_closing[ticker],
-            "closings_prices": {},
-            "current_price": data.current_prices[ticker],
-            "change": stock.get_stock_change(ticker)
-        }
-        for closing in data.closings[ticker]:
-            # assign the date as the key and the closing price as the value
-            response[ticker]["closings_prices"][closing[0]] = closing[1]
+    response["meta"]["request_time"] = str(request_time)
+    response["meta"]["current_prices_date_logged"] = str(data.current_prices_date_logged)
+    response["meta"]["previous_closing_date_logged"] = str(data.closings_date_logged)
 
-    return response
+    for ticker in data.tickers:
+        response["data"][ticker] = {
+            "company": data.companies[ticker],
+            "current_price": data.current_prices[ticker],
+            "previous_closing_price": data.previous_closing[ticker],
+            "change": stock.get_stock_change(ticker),
+            "closings_prices": {}
+        }
+
+        for closing in data.closings[ticker]:
+            response["data"][ticker]["closings_prices"][closing[0]] = closing[1]
+
+    return Response(json.dumps(response), mimetype='application/json')
 
 
 def main():
