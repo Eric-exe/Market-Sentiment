@@ -12,8 +12,10 @@ class Data:
         self.companies = {}  # dict {name : ticker} and {ticker : name}
         self.tickers = []  # list [ticker]
 
-        self.previous_closings = {} # dict {ticker : [previous_closings]}, 14 days
-        self.previous_closings_date_logged = None  # datetime, last logged
+        self.previous_closing = {}  # dict {ticker : previous_closing}
+        self.closings = {} # dict {ticker : [date, previous_closing]}, 14 days
+        self.closings_company_date_logged = {}  # dict {ticker : datetime}, last logged
+        self.closings_date_logged = None  # datetime, last logged for all companies
 
         self.current_prices = {}  # dict {ticker : current_price}
         self.current_prices_date_logged = None  # datetime, last logged

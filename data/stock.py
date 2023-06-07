@@ -21,6 +21,12 @@ def get_stock_previous_close(info):
     """Return the stock previous close from the API."""
     return info["previousClose"]
 
+def get_stock_close_date(ticker):
+    """Return the stock previous close date from the API."""
+    ticker_info = yf.Ticker(ticker)
+    history = ticker_info.history(period="1d")
+    return history.index[-1].strftime("%Y-%m-%d")
+
 # ==================================================================================================
 
 
@@ -30,19 +36,10 @@ class Stock:
     def __init__(self, data):
         """Initialize the Stock class."""
         self.data = data
-        data.companies = None  # {name : ticker}
-        data.tickers = None  # [ticker]
-        data.previous_closings = None
-        data.current_prices = None
-        data.previous_closings_date_logged = None
-        data.current_prices_date_logged = None
-
         self.get_companies()
 
     def get_companies(self):
         """Update the company data."""
-        self.data.companies = {}
-        self.data.tickers = []
         # read the company data from the CSV file
         with open('data/companies.csv', 'r', encoding="utf-8") as file:
             data = file.read().split("\n")
@@ -57,30 +54,48 @@ class Stock:
 
                 self.data.tickers.append(ticker)
 
-        self.data.previous_closings = {}
+        self.data.closings = {}
         self.data.current_prices = {}
 
-    def save_previous_closings(self):
+    def save_closings_prices(self):
         """Save the previous closing prices of the companies."""
 
         # check if we already have logged the previous closing prices
-        if (self.data.previous_closings_date_logged is None or
-                self.data.previous_closings_date_logged != datetime.today().date()):
+        # update every 60 minutes
+        if (self.data.closings_date_logged is None or
+                datetime.today().now() - self.data.closings_date_logged >=
+                timedelta(minutes=60)):
 
-            self.data.previous_closings_date_logged = datetime.today().date()
-            # process the previous closing prices
+            # update the time we logged the previous closing prices
+            self.data.closings_date_logged = datetime.today().now()
+
+            # process the closing prices
             for ticker in self.data.tickers:
-                # get the previous closing price
-                info = get_stock_info(ticker)
-                previous_close = get_stock_previous_close(info)
-                # save the previous closing price
-                if ticker not in self.data.previous_closings:
-                    self.data.previous_closings[ticker] = []
-                self.data.previous_closings[ticker].insert(0, previous_close)
+                # compare the closing date with the current date
+                close_date = self.data.closings_company_date_logged.get(ticker)
+                current_close_date = get_stock_close_date(ticker)
 
-                # we only want to save the previous closing prices for the past 14 days
-                if len(self.data.previous_closings[ticker]) > 14:
-                    self.data.previous_closings[ticker].pop()
+                if (close_date is None
+                    or close_date != current_close_date):
+                    # get the closing prices for the last 14 trading days
+                    stock = yf.Ticker(ticker)
+                    closings_data = stock.history(period="14d")['Close']
+                    closings_list = [
+                        [str(date.date()), price] for date, price in closings_data.items()
+                    ]
+
+                    # reverse the list so that the most recent date is first
+                    closings_list.reverse()
+
+                    # update the closing prices
+                    self.data.closings[ticker] = closings_list
+
+                    # upadte the previous closing price
+                    self.data.previous_closing[ticker] = get_stock_previous_close(stock.info)
+
+                    # update the closing date logged
+                    self.data.closings_company_date_logged[ticker] = current_close_date
+
 
     def save_current_prices(self):
         """Save the current prices of the companies. Should update every 10 minutes."""
@@ -97,15 +112,6 @@ class Stock:
     def get_stock_change(self, ticker):
         """Return the stock change percentage."""
         current_price = self.data.current_prices[ticker]
-        previous_close = self.data.previous_closings[ticker][0]
-        return round((current_price - previous_close) / previous_close * 100, 2)
-
-    def get_five_day_stock_change(self, ticker):
-        """Return the stock change percentage over 5 days."""
-        current_price = self.data.current_prices[ticker]
-        previous_closings = self.data.previous_closings[ticker]
-        if len(previous_closings) < 5:
-            return -1
-        else:
-            return round((current_price - previous_closings[4]) / previous_closings[4] * 100, 2)
+        previous_closing = self.data.previous_closing[ticker]
+        return (current_price - previous_closing) / previous_closing * 100
         
