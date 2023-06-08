@@ -25,7 +25,7 @@ class FirebaseDB:
             6. Rename the downloaded JSON file to serviceAccountKey.json\n
             7. Place the serviceAccountKey.json file in the root directory of the project."""
             )
-        
+
         cred = credentials.Certificate("serviceAccountKey.json")
 
         # initialize the app with a service account, granting admin privileges

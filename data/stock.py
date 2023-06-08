@@ -115,25 +115,21 @@ class Stock:
         meta = database.get_stock_meta()
         if meta is None:
             return
-        
+
         current_prices_date_logged = meta.get("current_prices_date_logged")
-        closings_date_logged = meta.get("closing_date_logged")
+        closings_date_logged = meta.get("closings_date_logged")
 
         if (current_prices_date_logged is None or closings_date_logged is None):
             return
-        
+
         current_prices_date_logged = datetime.strptime(current_prices_date_logged, "%Y-%m-%d %H:%M:%S.%f")
         closings_date_logged = datetime.strptime(closings_date_logged, "%Y-%m-%d %H:%M:%S.%f")
 
-        if (current_prices_date_logged is None or
-                datetime.today().now() - current_prices_date_logged >= timedelta(seconds=30)):
+        # if at least one of the data is recent, load the data
+        if (datetime.today().now() - current_prices_date_logged > timedelta(seconds=30) and
+                datetime.today().now() - closings_date_logged > timedelta(minutes=60)):
             return
 
-        if (closings_date_logged is None or
-                datetime.today().now() - closings_date_logged >= timedelta(minutes=60)):
-            return
-
-        # it is recent, so load the data
         data = database.get_stock_data()
         # the keys are the tickers
         for ticker in data.keys():
