@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["gunicorn", "--workers=4", "--timeout=120", "--bind", "0.0.0.0:5000", "api.index:app"]
+CMD ["gunicorn", "--worker-tmp-dir", "/dev/shm", "--workers=4", "--timeout=120", "--limit-request-line", "0", "--bind", "0.0.0.0:5000", "api.index:app"]
