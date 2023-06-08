@@ -80,16 +80,15 @@ class Stock:
         previous_closing = self.data.previous_closing[ticker]
         return (current_price - previous_closing) / previous_closing * 100
 
-    def get_stock_data(self):
+    def get_stock_data(self, request_time):
         """Return the stock data in a dictionary."""
-        request_time = datetime.today().now()
 
         response = {
             "meta": {},
             "data": {}
         }
 
-        response["meta"]["request_time"] = str(request_time)
+        response["meta"]["request_time"] = request_time
         response["meta"]["current_prices_date_logged"] = str(
             self.data.current_prices_date_logged)
         response["meta"]["closings_date_logged"] = str(

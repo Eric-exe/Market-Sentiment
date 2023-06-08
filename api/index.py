@@ -2,6 +2,7 @@
 
 import os
 import json
+from datetime import datetime
 from flask import Flask, render_template, Response
 import data.data as data
 import data.stock as stock
@@ -50,9 +51,11 @@ def scripts():
 @app.route("/api/stock_data", methods=["GET"])
 def get_stock_data():
     """Return company info, ticker, previous closing prices, and current prices."""
+
+    request_time = str(datetime.today().now())
     update_stock_data()
 
-    response = stock.get_stock_data()
+    response = stock.get_stock_data(request_time)
     # update firebase db
     db.update_stock_data(response)
 
