@@ -6,5 +6,3 @@ services:
       context: .
     ports:
       - "5000:5000"
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=1 # disable ipv6, speeds up the app

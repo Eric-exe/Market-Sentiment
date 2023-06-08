@@ -15,7 +15,7 @@ class Stock:
     def get_companies(self):
         """Update the company data."""
         # read the company data from the CSV file
-        with open('data/companies.csv', 'r', encoding="utf-8") as file:
+        with open('api/data/companies.csv', 'r', encoding="utf-8") as file:
             data = file.read().split("\n")
             data.pop(0)  # remove header
             for company in data:
@@ -31,8 +31,6 @@ class Stock:
         self.data.closings = {}
         self.data.current_prices = {}
 
-        self.data.ticker_data = Ticker(self.data.tickers)
-
     def save_closings_prices(self):
         """Save the previous closing prices of the companies."""
 
@@ -42,13 +40,9 @@ class Stock:
                 datetime.today().now() - self.data.closings_date_logged >=
                 timedelta(minutes=60)):
 
-            # update the time we logged the previous closing prices
-            self.data.closings_date_logged = datetime.today().now()
-
             # process the closing prices
             for ticker in self.data.tickers:
                 self.data.closings[ticker] = []
-
                 # get the closing prices for the last 14 days
                 history = Ticker(ticker).history(period="15d")
                 closing_prices = history.reset_index(
@@ -62,17 +56,25 @@ class Stock:
                 self.data.closings[ticker] = closing_prices
 
                 # update the previous closing price
-                self.data.previous_closing[ticker] = self.data.ticker_data.price[ticker]["regularMarketPreviousClose"]
+                # use singular ticker instead of batch because it is faster
+                self.data.previous_closing[ticker] = Ticker(ticker).price["regularMarketPreviousClose"]
+
+            # update the time we logged the previous closing prices
+            self.data.closings_date_logged = datetime.today().now()
 
     def save_current_prices(self):
         """Save the current prices of the companies. Should update every 30 seconds."""
+
         if (self.data.current_prices_date_logged is None or
                 datetime.today().now() - self.data.current_prices_date_logged >=
                 timedelta(seconds=30)):
 
-            self.data.current_prices_date_logged = datetime.today().now()
+            # switching to singular ticker instead of batch because it is faster
             for ticker in self.data.tickers:
-                self.data.current_prices[ticker] = self.data.ticker_data.price[ticker]["regularMarketPrice"]
+                data = Ticker(ticker)
+                self.data.current_prices[ticker] = data.price[ticker]["regularMarketPrice"]
+
+            self.data.current_prices_date_logged = datetime.today().now()
 
     def get_stock_change(self, ticker):
         """Return the stock change percentage."""

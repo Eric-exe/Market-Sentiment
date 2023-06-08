@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.11
 
 WORKDIR /app
 
@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["gunicorn", "--worker-tmp-dir", "/dev/shm", "--workers=4", "--timeout=120", "--limit-request-line", "0", "--bind", "0.0.0.0:5000", "api.index:app"]
+CMD ["gunicorn", "--worker-tmp-dir", "/dev/shm", "--workers=4", "--timeout=120", "--limit-request-line", "0", "--bind", "0.0.0.0:5000", "app:app"]
