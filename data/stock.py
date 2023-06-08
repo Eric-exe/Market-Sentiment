@@ -115,9 +115,15 @@ class Stock:
         meta = database.get_stock_meta()
         if meta is None:
             return
+        
+        current_prices_date_logged = meta.get("current_prices_date_logged")
+        closings_date_logged = meta.get("closing_date_logged")
 
-        current_prices_date_logged = datetime.strptime(meta.get("current_prices_date_logged"), "%Y-%m-%d %H:%M:%S.%f")
-        closings_date_logged = datetime.strptime(meta.get("previous_closing_date_logged"), "%Y-%m-%d %H:%M:%S.%f")
+        if (current_prices_date_logged is None or closings_date_logged is None):
+            return
+        
+        current_prices_date_logged = datetime.strptime(current_prices_date_logged, "%Y-%m-%d %H:%M:%S.%f")
+        closings_date_logged = datetime.strptime(closings_date_logged, "%Y-%m-%d %H:%M:%S.%f")
 
         if (current_prices_date_logged is None or
                 datetime.today().now() - current_prices_date_logged >= timedelta(seconds=30)):
