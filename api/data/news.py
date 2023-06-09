@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import requests
 
-import api.data.utils as utils
+import utils.dict_compress as dict_compress
 
 
 class News:
@@ -25,7 +25,7 @@ class News:
         self.api_token = os.getenv("MARKETAUX_API_TOKEN")
 
         config = configparser.ConfigParser()
-        config.read("api/config.ini")
+        config.read("config/config.ini")
 
         self.sentiment_range = [
             config["SENTIMENT_RANGE"]["WEAK_BEGIN"],
@@ -119,7 +119,7 @@ class News:
             "news_date_logged": str(self.data.news_date_logged[ticker]),
             "news_count": self.data.news_count[ticker],
             "sentiment": self.data.sentiment[ticker],
-            "news_compressed": utils.compress_data(self.data.news[ticker])
+            "news_compressed": dict_compress.compress_data(self.data.news[ticker])
         }
         database.add_news_data(ticker, ticker_data)
 
@@ -177,7 +177,7 @@ class News:
                 date = datetime.strptime(ticker_data["news_date_logged"], "%Y-%m-%d %H:%M:%S.%f")
 
                 if datetime.now() - date < timedelta(hours=24):
-                    self.data.news[ticker] = utils.decompress_data(ticker_data["news_compressed"])
+                    self.data.news[ticker] = dict_compress.decompress_data(ticker_data["news_compressed"])
                     self.data.news_count[ticker] = ticker_data["news_count"]
                     self.data.sentiment[ticker] = ticker_data["sentiment"]
                     self.data.news_date_logged[ticker] = ticker_data["news_date_logged"]
@@ -190,6 +190,14 @@ class News:
         self.data.news_date_logged_all = datetime.now()
         self.data.news_is_complete = True
 
+        # update meta in firebase
+        meta = {
+            "news_is_complete": str(self.data.news_is_complete),
+            "news_date_logged_all": str(self.data.news_date_logged_all)
+        }
+
+        database.add_news_meta(meta)
+
     def get_news_data(self, request_time):
         """Return the news data for all companies as a dictionary."""
         response = {
@@ -198,7 +206,7 @@ class News:
         }
 
         response["meta"]["request_time"] = request_time
-        response["meta"]["is_complete"] = str(self.data.news_is_complete)
+        response["meta"]["news_is_complete"] = str(self.data.news_is_complete)
         response["meta"]["news_date_logged_all"] = str(self.data.news_date_logged_all)
 
         for ticker in self.data.tickers:
@@ -227,7 +235,7 @@ class News:
         if news_date_logged_all is None:
             return False
         
-        news_is_complete = meta.get("is_complete")
+        news_is_complete = meta.get("news_is_complete")
         if news_is_complete is None:
             return False
         
@@ -248,7 +256,7 @@ class News:
         for ticker in data:
             self.data.news_count[ticker] = data[ticker]["news_count"]
             self.data.sentiment[ticker] = data[ticker]["sentiment"]
-            self.data.news[ticker] = data[ticker]["news"]
+            self.data.news[ticker] = dict_compress.decompress_data(data[ticker]["news_compressed"])
             self.data.news_date_logged[ticker] = data[ticker]["news_date_logged"]
 
         self.data.news_date_logged_all = news_date_logged_all

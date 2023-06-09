@@ -1,4 +1,4 @@
-"""The utilities file for the API"""
+"""The dict compression and decompression file"""
 
 import zlib
 import base64

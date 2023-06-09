@@ -36,6 +36,8 @@ class FirebaseDB:
         # get a reference to the database service
         self.db_ref = db.reference()
 
+# ==============================================================================
+
     def update_stock_data(self, data):
         """Update the stock data in the Firebase database."""
         self.db_ref.update({"stock" : data})
@@ -48,9 +50,15 @@ class FirebaseDB:
         """Get the stock data from the Firebase database."""
         return self.db_ref.child("stock").child("data").get()
 
+# ==============================================================================
+
     def add_news_data(self, ticker, data):
         """Add the news data to the Firebase database."""
         self.db_ref.child("news").child("data").child(ticker).set(data)
+    
+    def add_news_meta(self, data):
+        """Add the news metadata to the Firebase database."""
+        self.db_ref.child("news").child("meta").set(data)
 
     def get_news_data_ticker(self, ticker):
         """Get the news data for a specific ticker from the Firebase database."""
