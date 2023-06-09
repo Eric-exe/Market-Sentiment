@@ -38,12 +38,29 @@ class FirebaseDB:
 
     def update_stock_data(self, data):
         """Update the stock data in the Firebase database."""
-        self.db_ref.update({"stock_data" : data})
+        self.db_ref.update({"stock" : data})
 
     def get_stock_meta(self):
         """Get the stock metadata from the Firebase database."""
-        return self.db_ref.child("stock_data").child("meta").get()
+        return self.db_ref.child("stock").child("meta").get()
 
     def get_stock_data(self):
         """Get the stock data from the Firebase database."""
-        return self.db_ref.child("stock_data").child("data").get()
+        return self.db_ref.child("stock").child("data").get()
+
+    def add_news_data(self, ticker, data):
+        """Add the news data to the Firebase database."""
+        self.db_ref.child("news").child("data").child(ticker).set(data)
+
+    def get_news_data_ticker(self, ticker):
+        """Get the news data for a specific ticker from the Firebase database."""
+        return self.db_ref.child("news").child("data").child(ticker).get()
+
+    def get_news_meta(self):
+        """Get the news metadata from the Firebase database."""
+        return self.db_ref.child("news").child("meta").get()
+
+    def get_news_data(self):
+        """Get the news data from the Firebase database."""
+        return self.db_ref.child("news").child("data").get()
+    

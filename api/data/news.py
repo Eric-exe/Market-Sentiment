@@ -6,11 +6,12 @@ It also saves the data to a JSON file for later use.
 # API: https://www.marketaux.com/documentation
 
 import os
-import time
 import configparser
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import requests
+
+import api.data.utils as utils
 
 
 class News:
@@ -19,10 +20,6 @@ class News:
     def __init__(self, data):
 
         self.data = data
-        self.data.news = {}
-        self.data.sentiment = {}
-        self.data.news_count = {}
-        self.data.news_date_logged = {}
 
         load_dotenv()
         self.api_token = os.getenv("MARKETAUX_API_TOKEN")
@@ -48,7 +45,7 @@ class News:
         self.days_range = config["MISC"]["DAYS_RANGE"]
         self.bayesian_extra_values = config["MISC"]["BAYESIAN_EXTRA_VALUES"]
 
-    def get_news(self, ticker):
+    def get_news(self, ticker, database):
         """Return the news data for said company."""
         # build the request
         url = "https://api.marketaux.com/v1/news/all?" + \
@@ -56,7 +53,7 @@ class News:
               "&filter_entities=true" + \
               "&published_after=" + \
               (datetime.today() - timedelta(days=int(self.days_range))).strftime("%Y-%m-%d") + \
-              "&sort=published_on" + \
+              "&sort=entity_match_score" + \
               "&api_token=" + self.api_token
 
         urls = []
@@ -76,65 +73,185 @@ class News:
             urls.append(url)
             url = url[:-len(sentiment)]
 
-        article_counts = []
-        articles = []
+        labels = ["weak_positive", "moderate_positive", "strong_positive",
+                  "weak_negative", "moderate_negative", "strong_negative"]
+
+        article_counts = {}
+        articles = {}
 
         # send the requests
-        for url in urls:
-            response = requests.get(url, timeout=60)
+        for i in range(len(urls)):
+            response = requests.get(urls[i], timeout=60)
 
             if response.status_code != 200:
                 print("Error: " + str(response.status_code))
-                article_counts.append(-1)
-                articles.append([])
-                continue
+                return False
 
             data = response.json()
 
-            article_counts.append(data["meta"]["found"])
-            articles.append(data["data"])
+            article_counts[labels[i]] = data["meta"]["found"]
 
-            # wait for 1 second to avoid rate limit
-            time.sleep(1)
+            # news articles
+            news_articles = data["data"]  # list of dictionaries
+            articles[labels[i]] = []
+
+            for article in news_articles:
+                articles[labels[i]].append({
+                    "title": article["title"],
+                    "description": article["description"],
+                    "url": article["url"],
+                    "published_at": article["published_at"],
+                })
+
+            # marketaux has a 60 api request per minute limit
+            # luckily, we only need to make 60 requests (10 companies * 6 sentiments)
+            # if you want to add more companies, you need to add a delay here
+            # sleep(some time)
 
         self.data.news[ticker] = articles
         self.data.news_count[ticker] = article_counts
-        self.data.news_date_logged[ticker] = datetime.today().date()
         self.data.sentiment[ticker] = self.get_sentiment(article_counts)
+        self.data.news_date_logged[ticker] = datetime.now()
 
-    def load_news(self, ticker):
-        """Load the news data for said company. Use this function instead of get_news()"""
-        # check if the news data is already loaded
-        if ticker in self.data.news_date_logged:
-            # check if the news data is up to date
-            if self.data.news_date_logged[ticker] == datetime.today().date():
-                return [self.data.news_count[ticker], self.data.news[ticker]]
+        # save to firebase
+        # we save it for each ticker so that we don't lost data if the program crashes
+        ticker_data = {
+            "news_date_logged": str(self.data.news_date_logged[ticker]),
+            "news_count": self.data.news_count[ticker],
+            "sentiment": self.data.sentiment[ticker],
+            "news_compressed": utils.compress_data(self.data.news[ticker])
+        }
+        database.add_news_data(ticker, ticker_data)
 
-        self.get_news(ticker)
-        return [self.data.sentiment[ticker], self.data.news[ticker]]
+        return True
 
     def get_sentiment(self, sentiments):
         """Return a sentiment score given article counts."""
         data = sentiments
         # calculate the sentiment score
-        sentiment_score = 0
-        for i in range(3):
-            sentiment_score += data[i] * int(self.sentiment_weight[i])
+        # check if any article count < 0 (error)
+        for key in data:
+            if data[key] < 0:
+                return 0
 
-        for i in range(3):
-            sentiment_score -= data[i + 3] * int(self.sentiment_weight[i])
+        sentiment_score = 0
+
+        sentiment_score += data["weak_positive"] * \
+            int(self.sentiment_weight[0])
+        sentiment_score += data["moderate_positive"] * \
+            int(self.sentiment_weight[1])
+        sentiment_score += data["strong_positive"] * \
+            int(self.sentiment_weight[2])
+
+        sentiment_score -= data["weak_negative"] * \
+            int(self.sentiment_weight[0])
+        sentiment_score -= data["moderate_negative"] * \
+            int(self.sentiment_weight[1])
+        sentiment_score -= data["strong_negative"] * \
+            int(self.sentiment_weight[2])
 
         # normalize the sentiment score and add the extra bayesian values
-        sentiment_score /= ((data[0] + data[3]) * int(self.sentiment_weight[0]) +
-                            (data[1] + data[4]) * int(self.sentiment_weight[1]) +
-                            (data[2] + data[5]) * int(self.sentiment_weight[2]) +
+        sentiment_score /= ((data["weak_positive"] + data["weak_negative"]) * int(self.sentiment_weight[0]) +
+                            (data["moderate_positive"] + data["moderate_negative"]) * int(self.sentiment_weight[1]) +
+                            (data["strong_positive"] + data["strong_negative"]) * int(self.sentiment_weight[2]) +
                             int(self.bayesian_extra_values))
 
         return sentiment_score
 
-    def save_news(self):
+    def save_news(self, database):
         """Update the news data for all companies."""
+
+        # check if we already have the news data for today
+        # check if the datetime is defined
+        if (self.data.news_date_logged_all is not None and
+                datetime.now() - self.data.news_date_logged_all <= timedelta(hours=24) and
+                self.data.news_is_complete == True):
+            return
+
         for ticker in self.data.tickers:
-            if ticker in self.data.news_date_logged:
-                continue
-            self.load_news(ticker)
+            # fetch from firebase first
+            ticker_data = database.get_news_data_ticker(ticker)
+            # check if the data is up to date
+            if ticker_data is not None and ticker_data.get("news_date_loged") != None:
+
+                date = datetime.strptime(ticker_data["news_date_logged"], "%Y-%m-%d %H:%M:%S.%f")
+
+                if datetime.now() - date < timedelta(hours=24):
+                    self.data.news[ticker] = utils.decompress_data(ticker_data["news_compressed"])
+                    self.data.news_count[ticker] = ticker_data["news_count"]
+                    self.data.sentiment[ticker] = ticker_data["sentiment"]
+                    self.data.news_date_logged[ticker] = ticker_data["news_date_logged"]
+                    continue
+
+            if not self.get_news(ticker, database):
+                # ran into an error, stop processing
+                return
+
+        self.data.news_date_logged_all = datetime.now()
+        self.data.news_is_complete = True
+
+    def get_news_data(self, request_time):
+        """Return the news data for all companies as a dictionary."""
+        response = {
+            "meta": {},
+            "data": {}
+        }
+
+        response["meta"]["request_time"] = request_time
+        response["meta"]["is_complete"] = str(self.data.news_is_complete)
+        response["meta"]["news_date_logged_all"] = str(self.data.news_date_logged_all)
+
+        for ticker in self.data.tickers:
+            response["data"][ticker] = {
+                "news_count": self.data.news_count[ticker],
+                "sentiment": self.data.sentiment[ticker],
+                "news": self.data.news[ticker]
+            }
+
+        return response
+
+    def load_news_data(self, database):
+        """Load the news data from the database."""
+
+        # first, check if the data we have is recent
+        if (self.data.news_is_complete and
+                datetime.now() - self.data.news_date_logged_all < timedelta(hours=24)):
+            return True
+
+        meta = database.get_news_meta()
+        if meta is None:
+            return False
+        
+        # check if the data is complete
+        news_date_logged_all = meta.get("news_date_logged_all")
+        if news_date_logged_all is None:
+            return False
+        
+        news_is_complete = meta.get("is_complete")
+        if news_is_complete is None:
+            return False
+        
+        news_is_complete = bool(news_is_complete)
+        if news_is_complete is False:
+            return False
+        
+        # check if the data is recent
+        news_date_logged_all = datetime.strptime(
+            news_date_logged_all, "%Y-%m-%d %H:%M:%S.%f")
+
+        if datetime.now() - news_date_logged_all > timedelta(hours=24):
+            return False
+
+        # the data is recent, load data from firebase
+        data = database.get_news_data()
+
+        for ticker in data:
+            self.data.news_count[ticker] = data[ticker]["news_count"]
+            self.data.sentiment[ticker] = data[ticker]["sentiment"]
+            self.data.news[ticker] = data[ticker]["news"]
+            self.data.news_date_logged[ticker] = data[ticker]["news_date_logged"]
+
+        self.data.news_date_logged_all = news_date_logged_all
+        self.data.news_is_complete = True
+
+        return True

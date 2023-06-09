@@ -19,21 +19,24 @@ news = news.News(data)
 db = firebase_db.FirebaseDB()
 # ==============================================================================
 
-
 def update_stock_data():
     """Update the stock data."""
-    # TODO: check if the data is recent so that we don't have to update it every time the API is called
-    stock.load_stock_data(db)
-    stock.save_closings_prices()
-    stock.save_current_prices()
+    if not stock.load_stock_data(db):
+        stock.save_closings_prices()
+        stock.save_current_prices()
+
+def update_news_data():
+    """Update the news data."""
+    if not news.load_news_data(db):
+        news.save_news(db)
 
 # ==============================================================================
 
 @api_bp.route("/stock_data", methods=["GET"])
-def get_stock_data():
+def get_stock():
     """Return company info, ticker, previous closing prices, and current prices."""
 
-    request_time = str(datetime.today().now())
+    request_time = str(datetime.now())
     update_stock_data()
 
     response = stock.get_stock_data(request_time)
@@ -42,6 +45,18 @@ def get_stock_data():
 
     return Response(json.dumps(response), mimetype="application/json")
 
+@api_bp.route("/news_data", methods=["GET"])
+def get_news():
+    """Return the news data."""
+
+    request_time = str(datetime.now())
+    update_news_data()
+
+    response = news.get_news_data(request_time)
+
+    return Response(json.dumps(response), mimetype="application/json")
+
+# ==============================================================================
 def main():
     """Main function."""
     # check if .env exists
