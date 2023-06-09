@@ -57,7 +57,8 @@ class Stock:
 
                 # update the previous closing price
                 # use singular ticker instead of batch because it is faster
-                self.data.previous_closing[ticker] = Ticker(ticker).price["regularMarketPreviousClose"]
+                ticker_data = Ticker(ticker).price[ticker]
+                self.data.previous_closing[ticker] = ticker_data["regularMarketPreviousClose"]
 
             # update the time we logged the previous closing prices
             self.data.closings_date_logged = datetime.today().now()
