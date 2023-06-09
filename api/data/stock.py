@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta
 from yahooquery import Ticker
 
-
 class Stock:
     """The class for getting the stock information."""
 
@@ -37,7 +36,7 @@ class Stock:
         # check if we already have logged the previous closing prices
         # update every 60 minutes
         if (self.data.closings_date_logged is None or
-                datetime.today().now() - self.data.closings_date_logged >=
+                datetime.now() - self.data.closings_date_logged >=
                 timedelta(minutes=60)):
 
             # process the closing prices
@@ -61,13 +60,13 @@ class Stock:
                 self.data.previous_closing[ticker] = ticker_data["regularMarketPreviousClose"]
 
             # update the time we logged the previous closing prices
-            self.data.closings_date_logged = datetime.today().now()
+            self.data.closings_date_logged = datetime.now()
 
     def save_current_prices(self):
         """Save the current prices of the companies. Should update every 30 seconds."""
 
         if (self.data.current_prices_date_logged is None or
-                datetime.today().now() - self.data.current_prices_date_logged >=
+                datetime.now() - self.data.current_prices_date_logged >=
                 timedelta(seconds=30)):
 
             # switching to singular ticker instead of batch because it is faster
@@ -75,7 +74,7 @@ class Stock:
                 data = Ticker(ticker)
                 self.data.current_prices[ticker] = data.price[ticker]["regularMarketPrice"]
 
-            self.data.current_prices_date_logged = datetime.today().now()
+            self.data.current_prices_date_logged = datetime.now()
 
     def get_stock_change(self, ticker):
         """Return the stock change percentage."""
@@ -113,24 +112,33 @@ class Stock:
 
     def load_stock_data(self, database):
         """Loads the stock data from firebase"""
+        # first, check if our data is recent
+        if (self.data.current_prices_date_logged is not None and
+                self.data.closings_date_logged is not None and
+                datetime.now() - self.data.current_prices_date_logged <=
+                timedelta(seconds=30) and
+                datetime.now() - self.data.closings_date_logged <=
+                timedelta(minutes=60)):
+            return True
+        
         # check if the stock data in firebase is recent
         meta = database.get_stock_meta()
         if meta is None:
-            return
+            return False
 
         current_prices_date_logged = meta.get("current_prices_date_logged")
         closings_date_logged = meta.get("closings_date_logged")
 
-        if (current_prices_date_logged is None or closings_date_logged is None):
-            return
+        if current_prices_date_logged is None or closings_date_logged is None:
+            return False
 
         current_prices_date_logged = datetime.strptime(current_prices_date_logged, "%Y-%m-%d %H:%M:%S.%f")
         closings_date_logged = datetime.strptime(closings_date_logged, "%Y-%m-%d %H:%M:%S.%f")
 
         # if at least one of the data is recent, load the data
-        if (datetime.today().now() - current_prices_date_logged > timedelta(seconds=30) and
-                datetime.today().now() - closings_date_logged > timedelta(minutes=60)):
-            return
+        if (datetime.now() - current_prices_date_logged > timedelta(seconds=30) or
+                datetime.now() - closings_date_logged > timedelta(minutes=60)):
+            return False
 
         data = database.get_stock_data()
         # the keys are the tickers
@@ -148,5 +156,7 @@ class Stock:
             for date, price in data[ticker]["closings_prices"].items():
                 self.data.closings[ticker].append([date, price])
 
-            self.data.closings_date_logged = closings_date_logged
-            self.data.current_prices_date_logged = current_prices_date_logged
+        self.data.closings_date_logged = closings_date_logged
+        self.data.current_prices_date_logged = current_prices_date_logged
+
+        return True

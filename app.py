@@ -11,4 +11,4 @@ app.register_blueprint(api_bp, url_prefix="/api")
 app.register_blueprint(client_bp)
 
 if __name__ == "__main__":
-    app.run(threaded=True)
+    app.run(debug=False, threaded=True)
