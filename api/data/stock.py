@@ -3,6 +3,8 @@
 from datetime import datetime, timedelta
 from yahooquery import Ticker
 
+# TODO: Add recommendation trend to the stock data
+
 class Stock:
     """The class for getting the stock information."""
 
@@ -136,7 +138,7 @@ class Stock:
         closings_date_logged = datetime.strptime(closings_date_logged, "%Y-%m-%d %H:%M:%S.%f")
 
         # if at least one of the data is recent, load the data
-        if (datetime.now() - current_prices_date_logged > timedelta(seconds=30) or
+        if (datetime.now() - current_prices_date_logged > timedelta(seconds=30) and
                 datetime.now() - closings_date_logged > timedelta(minutes=60)):
             return False
 
@@ -159,4 +161,8 @@ class Stock:
         self.data.closings_date_logged = closings_date_logged
         self.data.current_prices_date_logged = current_prices_date_logged
 
-        return True
+        # if both data are recent, we don't need to update the data
+        if (datetime.now() - self.data.current_prices_date_logged <= timedelta(seconds=30) and
+                datetime.now() - self.data.closings_date_logged <= timedelta(minutes=60)):
+            return True
+        return False # we need to update the data

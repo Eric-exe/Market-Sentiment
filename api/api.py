@@ -62,24 +62,3 @@ def get_news():
     response = news.get_news_data(request_time)
 
     return Response(json.dumps(response), mimetype="application/json")
-
-# ==============================================================================
-def main():
-    """Main function."""
-    # check if .env exists
-    if not os.path.exists(".env"):
-        # throw an error
-        raise FileNotFoundError(
-            """The .env file does not exist. Create the .env file and add the following:\n\n
-
-            MARKETAUX_API_TOKEN=your_api_token\n
-            FIREBASE_DB_URL=your_firebase_db_url\n\n
-
-            To get the Marketaux API token, sign up at https://marketaux.com.\n\n
-
-            To get the Firebase DB URL, sign up at https://firebase.google.com.\n
-            Create a project and add a realtime database. Then, copy the URL of the realtime database.\n\n
-
-            Place the .env file in the root directory of the project."""
-        )
-    
