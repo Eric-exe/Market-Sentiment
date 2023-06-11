@@ -1,13 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Home</title>
+    <title id="title">Loading...</title>
+    <link rel="icon" href="{{ request.host_url.rstrip('/') + url_for('client.favicon') }}" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+
     <link rel='stylesheet' href='styles.css'>
     <script src='script.js'></script>
 </head>
+
 <body>
-    Hello
+    <div id="loading-status">
+        <div id="loading-indicator" class="d-flex align-items-center justify-content-center vh-100">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <iframe id="content-iframe" style="display: none;"></iframe>
+
+    <script>
+        // Fetch the index page content asynchronously
+
+        const iframe = document.getElementById('content-iframe');
+
+        fetch('/load-index')
+            .then(response => response.text())
+            .then(data => {
+                // Replace the loading page content with the main page content
+                iframe.srcdoc = data;
+                iframe.style.display = 'block';
+                document.getElementById('loading-status').style.display = 'none';
+                document.getElementById('title').innerHTML = 'Market Sentiment';
+            });
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+
+
 </body>
-</body>
+
 </html>
