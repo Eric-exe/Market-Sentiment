@@ -53,11 +53,12 @@
     <!-- Main content -->
     <div class="container-fluid mt-0 mb-3">
         <div class="row">
-            <div class="col-4 px-1 bg-darker">
+            <div class="col-4 vh-100 px-1 bg-darker overflow-auto">
 
                 <!-- Stocks nav bar, vertical pills -->
                 <!-- https://getbootstrap.com/docs/5.0/components/navs/ -->
-                <div class="nav flex-column nav-pills rounded p-1 mt-1" id="stocks-tabs" role="tablist"
+                
+                <div class="nav flex-column nav-pills rounded p-1 mt-1 scrollable" id="stocks-tabs" role="tablist"
                     aria-orientation="vertical">
 
                     <!-- Visually hidden placeholder button for starting text-->
@@ -71,10 +72,10 @@
                 </div>
 
             </div>
-            <div class="col-8 vh-100 bg-dark px-2">
+            <div class="col-8 vh-100 bg-dark px-2 overflow-auto">
 
                 <!-- show data last updated -->
-                <div class="container text-center border border-2 border-success rounded text-light mt-2 mb-1 p-1">
+                <div class="container text-center border border-2 border-success rounded text-light mt-2 mb-1 p-1 d-none d-md-block">
                     <div class="row">
                         <div class="col-4">
                             <b>Current prices updated:</b><br>
@@ -95,21 +96,8 @@
                     <div class="tab-pane fade text-light active show" id="start-pane" role="tabpanel"
                         aria-labelledby="start-tab">Starting Text</div>
 
-
-                    <div class="tab-pane fade text-light p-2" id="pane-AAPL" role="tabpanel" aria-labelledby="tab-AAPL">
-                        <h4>Apple (AAPL)</h4>
-
-                        <div class="container p-0">
-                            <div class="row">
-                                <div class="col-6">
-                                    <b>Regular Market Price:</b> $CURR_PRICE <br>
-                                    <b>Previous Close:</b> $PREV_CLOSE <br>
-                                </div>
-                                <div class="col-6">CONTENT2</div>
-                            </div>
-                        </div>
-
-                    </div>
+                    <!-- Tab panes -->
+                    {{ panes | safe }}
                 </div>
             </div>
         </div>

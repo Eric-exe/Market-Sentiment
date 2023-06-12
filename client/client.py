@@ -25,13 +25,12 @@ def load_index():
 
     stock_data = requests.get(stock_api_url).json()
     # news_data = requests.get(news_api_url).json()
-
-    button_html = html_builder.build_buttons(stock_data["data"])
     
     return render_template("template.html", 
-                           buttons=button_html,
+                           buttons=html_builder.build_buttons(stock_data["data"]),
                            current_prices_update_time=stock_data["meta"]["current_prices_date_logged"],
-                           previous_closing_prices_update_time=stock_data["meta"]["closings_date_logged"])
+                           previous_closing_prices_update_time=stock_data["meta"]["closings_date_logged"],
+                           panes=html_builder.build_panes(stock_data["data"]))
 
 # testing
 @client_bp.route("/template")
