@@ -24,13 +24,16 @@ def load_index():
     news_api_url = request.host_url.rstrip('/') + url_for("API.get_news")
 
     stock_data = requests.get(stock_api_url).json()
-    # news_data = requests.get(news_api_url).json()
+    news_data = requests.get(news_api_url).json()
     
     return render_template("template.html", 
                            buttons=html_builder.build_buttons(stock_data["data"]),
                            current_prices_update_time=stock_data["meta"]["current_prices_date_logged"],
                            previous_closing_prices_update_time=stock_data["meta"]["closings_date_logged"],
-                           panes=html_builder.build_panes(stock_data["data"]))
+                           news_update_time=news_data["meta"]["news_date_logged_all"],
+                           panes=html_builder.build_panes(stock_data["data"], news_data=news_data["data"]),
+                           rec_charts_script=html_builder.build_rec_charts_scripts(stock_data["data"]),
+                           sent_charts_script=html_builder.build_sent_charts_scripts(news_data["data"]))
 
 # testing
 @client_bp.route("/template")

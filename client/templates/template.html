@@ -3,6 +3,8 @@
 
 <head>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
 
@@ -57,7 +59,7 @@
 
                 <!-- Stocks nav bar, vertical pills -->
                 <!-- https://getbootstrap.com/docs/5.0/components/navs/ -->
-                
+
                 <div class="nav flex-column nav-pills rounded p-1 mt-1 scrollable" id="stocks-tabs" role="tablist"
                     aria-orientation="vertical">
 
@@ -75,7 +77,8 @@
             <div class="col-8 vh-100 bg-dark px-2 overflow-auto">
 
                 <!-- show data last updated -->
-                <div class="container text-center border border-2 border-success rounded text-light mt-2 mb-1 p-1 d-none d-md-block">
+                <div
+                    class="container text-center border border-2 border-success rounded text-light mt-2 p-1 d-none d-md-block">
                     <div class="row">
                         <div class="col-4">
                             <b>Current prices updated:</b><br>
@@ -86,13 +89,14 @@
                             {{ previous_closing_prices_update_time }}
                         </div>
                         <div class="col-4">
-                            <b>News updated:</b>
+                            <b>News updated:</b><br>
+                            {{ news_update_time }}
                         </div>
                     </div>
                 </div>
 
                 <!-- Stocks content -->
-                <div class="tab-content border border-secondary border-2 rounded p-2" id="stocks-panes">
+                <div class="tab-content border border-secondary border-2 rounded p-2 mt-2" id="stocks-panes">
                     <div class="tab-pane fade text-light active show" id="start-pane" role="tabpanel"
                         aria-labelledby="start-tab">Starting Text</div>
 
@@ -106,6 +110,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
         crossorigin="anonymous"></script>
+
+    <script>
+        {{ rec_charts_script | safe }}
+
+        {{ sent_charts_script | safe }}
+    </script>
 </body>
 
 </html>
