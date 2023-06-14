@@ -172,7 +172,7 @@ class News:
             # fetch from firebase first
             ticker_data = database.get_news_data_ticker(ticker)
             # check if the data is up to date
-            if ticker_data is not None and ticker_data.get("news_date_loged") != None:
+            if ticker_data is not None and ticker_data.get("news_date_logged") != None:
 
                 date = datetime.strptime(ticker_data["news_date_logged"], "%Y-%m-%d %H:%M:%S.%f")
 
@@ -227,6 +227,7 @@ class News:
             return True
 
         meta = database.get_news_meta()
+
         if meta is None:
             return False
         
@@ -242,14 +243,14 @@ class News:
         news_is_complete = bool(news_is_complete)
         if news_is_complete is False:
             return False
-        
+    
         # check if the data is recent
         news_date_logged_all = datetime.strptime(
             news_date_logged_all, "%Y-%m-%d %H:%M:%S.%f")
 
         if datetime.now() - news_date_logged_all > timedelta(hours=24):
             return False
-
+        
         # the data is recent, load data from firebase
         data = database.get_news_data()
 

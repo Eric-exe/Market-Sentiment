@@ -19,6 +19,8 @@ class Data:
         self.current_prices = {}  # dict {ticker : current_price}
         self.current_prices_date_logged = None  # datetime, last logged
 
+        self.analyst_recommendations = {}  # dict {ticker : {recommendation : count}}
+
         self.news = {}  # dict {ticker : [news]}
         self.sentiment = {}  # dict {ticker : sentiment}
         self.news_count = {}  # dict {ticker : [news_count]}

@@ -61,15 +61,27 @@ class Stock:
                 ticker_data = Ticker(ticker).price[ticker]
                 self.data.previous_closing[ticker] = ticker_data["regularMarketPreviousClose"]
 
+                # save the analyst recommendations
+                # Because the recommendations are not updated as frequently, we
+                # only update it every 60 minutes. Even then, it is overkill.
+                self.save_analyst_recommendations(ticker)
+
             # update the time we logged the previous closing prices
             self.data.closings_date_logged = datetime.now()
 
+    def save_analyst_recommendations(self, ticker):
+        """Gets the analyst recommmendations from the API and saves it to the data."""
+            
+        recommendations = Ticker(ticker).recommendation_trend
+        recommendations = recommendations.iloc[0][["strongBuy", "buy", "hold", "sell", "strongSell"]].to_dict()
+        self.data.analyst_recommendations[ticker] = recommendations
+
     def save_current_prices(self):
-        """Save the current prices of the companies. Should update every 30 seconds."""
+        """Save the current prices of the companies. Should update every 15 seconds."""
 
         if (self.data.current_prices_date_logged is None or
                 datetime.now() - self.data.current_prices_date_logged >=
-                timedelta(seconds=30)):
+                timedelta(seconds=15)):
 
             # switching to singular ticker instead of batch because it is faster
             for ticker in self.data.tickers:
@@ -77,12 +89,6 @@ class Stock:
                 self.data.current_prices[ticker] = data.price[ticker]["regularMarketPrice"]
 
             self.data.current_prices_date_logged = datetime.now()
-
-    def get_stock_change(self, ticker):
-        """Return the stock change percentage."""
-        current_price = self.data.current_prices[ticker]
-        previous_closing = self.data.previous_closing[ticker]
-        return (current_price - previous_closing) / previous_closing * 100
 
     def get_stock_data(self, request_time):
         """Return the stock data in a dictionary."""
@@ -103,8 +109,8 @@ class Stock:
                 "company": self.data.companies[ticker],
                 "current_price": self.data.current_prices[ticker],
                 "previous_closing_price": self.data.previous_closing[ticker],
-                "change": self.get_stock_change(ticker),
-                "closings_prices": {}
+                "closings_prices": {},
+                "analyst_recommendations": self.data.analyst_recommendations[ticker]
             }
 
             for closing in self.data.closings[ticker]:
@@ -118,7 +124,7 @@ class Stock:
         if (self.data.current_prices_date_logged is not None and
                 self.data.closings_date_logged is not None and
                 datetime.now() - self.data.current_prices_date_logged <=
-                timedelta(seconds=30) and
+                timedelta(seconds=15) and
                 datetime.now() - self.data.closings_date_logged <=
                 timedelta(minutes=60)):
             return True
@@ -138,7 +144,7 @@ class Stock:
         closings_date_logged = datetime.strptime(closings_date_logged, "%Y-%m-%d %H:%M:%S.%f")
 
         # if at least one of the data is recent, load the data
-        if (datetime.now() - current_prices_date_logged > timedelta(seconds=30) and
+        if (datetime.now() - current_prices_date_logged > timedelta(seconds=15) and
                 datetime.now() - closings_date_logged > timedelta(minutes=60)):
             return False
 
@@ -158,11 +164,13 @@ class Stock:
             for date, price in data[ticker]["closings_prices"].items():
                 self.data.closings[ticker].append([date, price])
 
+            self.data.analyst_recommendations[ticker] = data[ticker]["analyst_recommendations"]
+
         self.data.closings_date_logged = closings_date_logged
         self.data.current_prices_date_logged = current_prices_date_logged
 
         # if both data are recent, we don't need to update the data
-        if (datetime.now() - self.data.current_prices_date_logged <= timedelta(seconds=30) and
+        if (datetime.now() - self.data.current_prices_date_logged <= timedelta(seconds=15) and
                 datetime.now() - self.data.closings_date_logged <= timedelta(minutes=60)):
             return True
         return False # we need to update the data
