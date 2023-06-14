@@ -1,5 +1,7 @@
 """This file handles alll the HTML string building for the web app"""
 
+from datetime import datetime
+from collections import OrderedDict
 
 def build_buttons(stock_data):
     """Builds the buttons for the web app"""
@@ -190,6 +192,70 @@ def build_sent_charts_scripts(news_data):
 
     return res
 
+def build_news_panes(news_data, ticker):
+    """Builds the news panes for the web app"""
+    res = {
+        "all" : {},
+        "positive" : "",
+        "negative" : ""
+    }
+
+    html_string = """
+    <div class="card bg-dark text-light border-0 mb-1">
+        <div class="card-body p-2 pb-0">
+            <h5 class="card-title">
+                <a href="NEWS_URL" target="_blank" class="text-decoration-none text-light">
+                    <u>NEWS_TITLE</u>
+                </a>
+            </h5>
+            <p class="card-text">NEWS_DESC</p>
+            <p class="card-text"><small class="text-light">Published on NEWS_PUBLISHED</small></p>
+        </div>
+    </div>
+    <hr>
+    """
+
+    for sentiment in news_data[ticker]["news"]:
+        for news in news_data[ticker]["news"][sentiment]:
+            # html string
+            temp_string = html_string
+            temp_string = temp_string.replace("NEWS_TITLE", news["title"])
+            temp_string = temp_string.replace("NEWS_URL", news["url"])
+            temp_string = temp_string.replace("NEWS_DESC", news["description"])
+
+            # marketaux api's date format is like so: 2023-06-13T02:33:09.000000Z
+            # we want to remove the T and everything after it
+            news["published_at"] = news["published_at"].split("T")[0]
+
+            temp_string = temp_string.replace("NEWS_PUBLISHED", news["published_at"])
+
+            # the sentiments range from strong_positive to strong_negative. We want to group them into positive and negative
+            if sentiment in ["strong_positive", "moderate_positive", "weak_positive"]:
+                res["positive"] += temp_string
+            else:
+                res["negative"] += temp_string
+
+            # we will short the news by date. The most recent news will be at the top
+            # To do this, we can convert the date to a datetime object and then sort the list of news
+            datetime_obj = datetime.strptime(news["published_at"], "%Y-%m-%d")
+
+            if datetime_obj not in res["all"]:
+                res["all"][datetime_obj] = []
+            res["all"][datetime_obj].append(temp_string)
+    
+    # sort the news by date
+    res["all"] = OrderedDict(sorted(res["all"].items(), reverse=True))
+    
+    # convert the news into a string
+    news = ""
+    for date in res["all"]:
+        for news_item in res["all"][date]:
+            news += news_item
+    
+    res["all"] = news
+
+    return res
+
 def build_panes(stock_data, news_data):
     """Builds the panes for the web app"""
 
@@ -312,8 +378,47 @@ def build_panes(stock_data, news_data):
 
                 <!-- News -->
                 <!-- Medium and large -->
-                <div class="col-12 d-none d-md-block">
-                    <b>COMPANY in the News</b>
+                <div class="col-12">
+                    <h5>COMPANY in the News</h5>
+
+                    <card class="card bg-dark text-light border-secondary">
+                        <div class="card-header border-secondary">
+                            <ul class="nav nav-pills card-header-pills nav-fill">
+                                <li class="nav-item mx-2">
+                                    <button class="nav-link active" id="news-tab-all-TICKER" data-bs-toggle="pill" data-bs-target="#news-all-TICKER" type="button" role="tab" aria-controls="news-all-TICKER" aria-selected="true">All</button>
+                                </li>
+                                <li class="nav-item mx-2">
+                                    <button class="nav-link" id="news-tab-positive-TICKER" data-bs-toggle="pill" data-bs-target="#news-positive-TICKER" type="button" role="tab" aria-controls="news-positive-TICKER" aria-selected="false">Positive</button>
+                                </li>
+                                <li class="nav-item mx-2">
+                                    <button class="nav-link" id="news-tab-negative-TICKER" data-bs-toggle="pill" data-bs-target="#news-negative-TICKER" type="button" role="tab" aria-controls="news-negative-TICKER" aria-selected="false">Negative</button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="tab-content" id="news-panes-TICKER">
+                                <div class="tab-pane fade text-light show active mb-3" id="news-all-TICKER" role="tabpanel" aria-labelledby="news-tab-all-TICKER">
+
+                                    ALL_NEWS
+
+                                </div>
+
+                                <div class="tab-pane fade text-light mb-3" id="news-positive-TICKER" role="tabpanel" aria-labelledby="news-tab-positive-TICKER">
+                                    
+                                    POS_NEWS
+
+                                </div>
+
+                                <div class="tab-pane fade text-light mb-3" id="news-negative-TICKER" role="tabpanel" aria-labelledby="news-tab-negative-TICKER">
+                                    
+                                    NEG_NEWS
+                                
+                                </div>
+                            </div>
+                        </div>
+                    </card>
+
                 </div>
 
                 <!-- Small -->
@@ -369,6 +474,12 @@ def build_panes(stock_data, news_data):
         else:
             temp_string = temp_string.replace("TOTAL_NEWS", str(sum(news_data[ticker]["news_count"].values())))
             temp_string = temp_string.replace("SENTIMENT_VAL", format(news_data[ticker]["sentiment"], ".5f"))
+
+        # news pane
+        news_panes = build_news_panes(news_data, ticker)
+        temp_string = temp_string.replace("ALL_NEWS", news_panes["all"])
+        temp_string = temp_string.replace("POS_NEWS", news_panes["positive"])
+        temp_string = temp_string.replace("NEG_NEWS", news_panes["negative"])
 
         res += temp_string
 

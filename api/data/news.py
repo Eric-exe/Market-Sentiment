@@ -243,14 +243,14 @@ class News:
         news_is_complete = bool(news_is_complete)
         if news_is_complete is False:
             return False
-    
+
         # check if the data is recent
         news_date_logged_all = datetime.strptime(
             news_date_logged_all, "%Y-%m-%d %H:%M:%S.%f")
 
         if datetime.now() - news_date_logged_all > timedelta(hours=24):
             return False
-        
+
         # the data is recent, load data from firebase
         data = database.get_news_data()
 

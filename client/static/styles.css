@@ -16,13 +16,15 @@ iframe {
     border: none;
 }
 
-#stocks-tabs .nav-link.active {
-    background-color: #202426;
+#stocks-tabs .nav-link.active,
+.card-header .nav-link.active {
+    background-color: #212529;
     border: 2px solid #0d6efd;
 }
 
-#stocks-tabs .nav-link:not(.active) {
-    background-color: #202426; 
+#stocks-tabs .nav-link:not(.active),
+.card-header .nav-link:not(.active) {
+    background-color: #212529; 
     color: darkgray;
     opacity: 0.75;
 }
