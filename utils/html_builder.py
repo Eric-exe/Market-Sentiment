@@ -231,8 +231,13 @@ def build_news_panes(news_data, ticker):
 
             # the sentiments range from strong_positive to strong_negative. We want to group them into positive and negative
             if sentiment in ["strong_positive", "moderate_positive", "weak_positive"]:
+                # marketaux sometimes do have duplicate news. We want to remove them
+                if temp_string in res["positive"]:
+                    continue
                 res["positive"] += temp_string
             else:
+                if temp_string in res["negative"]:
+                    continue
                 res["negative"] += temp_string
 
             # we will short the news by date. The most recent news will be at the top
@@ -419,11 +424,6 @@ def build_panes(stock_data, news_data):
                         </div>
                     </card>
 
-                </div>
-
-                <!-- Small -->
-                <div class="col-12 d-md-none">
-                    <b>COMPANY in the News</b>
                 </div>
             </div>
         </div>
