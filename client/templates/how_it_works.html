@@ -82,18 +82,19 @@
                     <div class="card-body  bg-dark text-light border-secondary p-0">
                         <pre class="mb-0">
 
-raw sentiment score = 
-    (weak positive news count) * 1 + (weak negative news count) * -1 
-    (moderate positive news count) * 2 + (moderate negative news count) * -2 
-    (strong positive news count) * 3 + (strong negative news count) * -3 
+    raw_sentiment_score = 
+        (weak_positive_news_count) * 1 + (moderate_positive_news_count) * 2 + (strong_positive_news_count) * 3 + 
+        (weak_negative_news_count) * -1 + (moderate_negative_news_count) * -2 + (strong_negative_news_count) * -3
+    
 
-adjusted sentiment score =
-    raw sentiment score / 
-        ((weak positive news count + weak negative news count) * 1 + 
-         (moderate positive news count + moderate negative news count) * 2 +
-         (strong positive news count + strong negative news count) * 3 +
-         (extra bayesian values (100))
-        )
+    adjusted_sentiment_score =
+        raw_sentiment_score /
+            ( 
+                (weak_positive_news_count + weak_negative_news_count) * 1 + 
+                (moderate_positive_news_count + moderate_negative_news_count) * 2 +
+                (strong_positive_news_count + strong_negative_news_count) * 3 +
+                100 (bayesian extra value)
+            )
                         </pre>
                     </div>
                 </div>
