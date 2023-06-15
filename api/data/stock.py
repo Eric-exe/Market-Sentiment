@@ -31,6 +31,7 @@ class Stock:
 
         self.data.closings = {}
         self.data.current_prices = {}
+        self.data.tickers_info = Ticker(self.data.tickers)
 
     def save_closings_prices(self):
         """Save the previous closing prices of the companies."""
@@ -42,10 +43,14 @@ class Stock:
                 timedelta(minutes=60)):
 
             # process the closing prices
+            ticker_prices = self.data.tickers_info.price
+            ticker_history = self.data.tickers_info.history(period="15d")
+            self.data.closings_date_logged = datetime.now()
+
             for ticker in self.data.tickers:
                 self.data.closings[ticker] = []
                 # get the closing prices for the last 14 days
-                history = Ticker(ticker).history(period="15d")
+                history = ticker_history.loc[ticker]
                 closing_prices = history.reset_index(
                 )[["date", "close"]].values.tolist()
                 # convert the date to string
@@ -56,18 +61,12 @@ class Stock:
 
                 self.data.closings[ticker] = closing_prices
 
-                # update the previous closing price
-                # use singular ticker instead of batch because it is faster
-                ticker_data = Ticker(ticker).price[ticker]
-                self.data.previous_closing[ticker] = ticker_data["regularMarketPreviousClose"]
+                self.data.previous_closing[ticker] = ticker_prices[ticker]["regularMarketPreviousClose"]
 
                 # save the analyst recommendations
                 # Because the recommendations are not updated as frequently, we
                 # only update it every 60 minutes. Even then, it is overkill.
                 self.save_analyst_recommendations(ticker)
-
-            # update the time we logged the previous closing prices
-            self.data.closings_date_logged = datetime.now()
 
     def save_analyst_recommendations(self, ticker):
         """Gets the analyst recommmendations from the API and saves it to the data."""
@@ -82,11 +81,10 @@ class Stock:
         if (self.data.current_prices_date_logged is None or
                 datetime.now() - self.data.current_prices_date_logged >=
                 timedelta(seconds=15)):
-
-            # switching to singular ticker instead of batch because it is faster
+            
+            ticker_prices = self.data.tickers_info.price
             for ticker in self.data.tickers:
-                data = Ticker(ticker)
-                self.data.current_prices[ticker] = data.price[ticker]["regularMarketPrice"]
+                self.data.current_prices[ticker] = ticker_prices[ticker]["regularMarketPrice"]
 
             self.data.current_prices_date_logged = datetime.now()
 

@@ -27,12 +27,10 @@ def update_stock_data(request_time):
     """Update the stock data."""
     response = None
     if not stock.load_stock_data(db):
-        with lock:
-            # reduce writes to the database
-            stock.save_closings_prices()
-            stock.save_current_prices()
-            response = stock.get_stock_data(request_time)
-            db.update_stock_data(response)
+        stock.save_closings_prices()
+        stock.save_current_prices()
+        response = stock.get_stock_data(request_time)
+        db.update_stock_data(response)
     else:
         response = stock.get_stock_data(request_time)
 
@@ -54,7 +52,7 @@ def get_stock():
 
     request_time = str(datetime.now())
     response = update_stock_data(request_time)
-    
+
     return Response(json.dumps(response), mimetype="application/json")
 
 

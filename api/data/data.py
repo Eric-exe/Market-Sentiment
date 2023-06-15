@@ -11,6 +11,7 @@ class Data:
     def __init__(self):
         self.companies = {}  # dict {name : ticker} and {ticker : name}
         self.tickers = []  # list [ticker]
+        self.tickers_info = None # Ticker object
 
         self.previous_closing = {}  # dict {ticker : previous_closing}
         self.closings = {}  # dict {ticker : [date, previous_closing]}, 14 days
