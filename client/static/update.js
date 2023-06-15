@@ -68,4 +68,4 @@ function updatePrices() {
     });
 }
 
-setInterval(updatePrices, 15000);
+setInterval(updatePrices, 2500);

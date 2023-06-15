@@ -83,10 +83,9 @@ class Stock:
                 timedelta(seconds=15)):
             
             ticker_prices = self.data.tickers_info.price
+            self.data.current_prices_date_logged = datetime.now()
             for ticker in self.data.tickers:
                 self.data.current_prices[ticker] = ticker_prices[ticker]["regularMarketPrice"]
-
-            self.data.current_prices_date_logged = datetime.now()
 
     def get_stock_data(self, request_time):
         """Return the stock data in a dictionary."""

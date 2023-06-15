@@ -51,8 +51,59 @@
     <div class="container">
         <div class="row">
             <div class="col--12">
-                <h3 class="text-center mt-5">How it works</h3>
+                <h3 class="text-center mt-5">Market Sentiment - How it works</h3>
                 <hr class="bg-light">
+                The biggest challenge when creating this app was to find a way to measure the sentiment of the market through
+                the news. Originally, I wanted to use finBERT, a pretrained model that can be used to analyze financial text.
+                However, I also wanted to create a web app that can be used by anyone. It has to be hosted on a server and
+                most, if not all, pretrained models are too large to be hosted on a free server. Therefore, I decided to
+                use the Marketaux API to request the news for the last 14 days.
+                <br><br>
+                The Marketaux API is a free API that provides financial news from various sources. It also provides a sentiment
+                score for each article. The sentiment score is a number between -1 and 1, where -1 is very negative and 1 is
+                very positive. It did most of the heavy lifting for me. All I had to do was to request the news with a GET request.
+                However, the API is not free. It only allows 100 requests per day. I had to find a way to calculate the sentiment
+                of each stock with the least amount of requests. In the end, this is what I came up with:
+                <hr>
+                1. Send 6 requests to the API for each ticker. Each request has a sentiment range:
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item bg-dark text-light">Weak Positive: 0.15 to 0.39</li>
+                    <li class="list-group-item bg-dark text-light">Moderate Positive: 0.4 to 0.69</li>
+                    <li class="list-group-item bg-dark text-light">Strong Positive: 0.7 to 1</li>
+                    <li class="list-group-item bg-dark text-light">Weak Negative: -0.15 to -0.39</li>
+                    <li class="list-group-item bg-dark text-light">Moderate Negative: -0.4 to -0.69</li>
+                    <li class="list-group-item bg-dark text-light">Strong Negative: -0.7 to -1</li>
+                </ul>
+                <br>
+                2. Get the news count per sentiment range.
+                <br><br>
+                3. Calculate the sentiment score for each ticker by using this formula:
+                <div class="card m-2">
+                    <div class="card-body  bg-dark text-light border-secondary p-0">
+                        <pre class="mb-0">
+
+raw sentiment score = 
+    (weak positive news count) * 1 + (weak negative news count) * -1 
+    (moderate positive news count) * 2 + (moderate negative news count) * -2 
+    (strong positive news count) * 3 + (strong negative news count) * -3 
+
+adjusted sentiment score =
+    raw sentiment score / 
+        ((weak positive news count + weak negative news count) * 1 + 
+         (moderate positive news count + moderate negative news count) * 2 +
+         (strong positive news count + strong negative news count) * 3 +
+         (extra bayesian values (100))
+        )
+                        </pre>
+                    </div>
+                </div>
+                I added the extra bayesian values to prevent stocks with lower news count from having a higher sentiment score
+                than stocks with higher news count.
+                <hr>
+                <div class="text-center">
+                    The source code can be found 
+                    <a href="https://github.com/EricLin-jpg/Market-Sentiment" target="_blank">here</a>.
+                </div>
             </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
