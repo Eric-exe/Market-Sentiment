@@ -40,10 +40,20 @@ def load_index():
 def template():
     return render_template("template.html")
 
+@client_bp.route("/how_it_works")
+def how_it_works():
+    """Return the how_it_works page."""
+    return render_template("how_it_works.html")
+
 @client_bp.route("/script.js")
 def script():
     """Return the script.js file."""
     return client_bp.send_static_file("script.js")
+
+@client_bp.route("/update.js")
+def update():
+    """Return the update.js file."""
+    return client_bp.send_static_file("update.js")
 
 @client_bp.route("/styles.css")
 def styles():

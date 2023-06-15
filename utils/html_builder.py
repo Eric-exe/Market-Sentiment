@@ -10,11 +10,11 @@ def build_buttons(stock_data):
 
     html_string = """
     <button class="nav-link mb-1" id="tab-TICKER" data-bs-toggle="pill" data-bs-target="#pane-TICKER" type="button" role="tab" aria-controls="pane-TICKER" aria-selected="false">
-        <div class="row text-left">
-            <div class="col-4 d-none d-md-block"><b>TICKER</b></div>
-            <div class="col-4 d-none d-md-block"><b>PRICE</b></div>
-            <div class="col-4 d-none d-md-block text-danger"><b>CHANGE</b></div>
-            <div class="col-12 d-md-none"><b>TICKER</b></div>
+        <div class="row text-left fw-bold">
+            <div class="col-4 d-none d-md-block">TICKER</div>
+            <div class="col-4 d-none d-md-block" id="stocks-tab-price-TICKER">PRICE</div>
+            <div class="col-4 d-none d-md-block text-danger" id="stocks-tab-change-TICKER">CHANGE</div>
+            <div class="col-12 d-md-none">TICKER</div>
         </div>
     </button>
     """
@@ -267,16 +267,23 @@ def build_panes(stock_data, news_data):
     res = ""
 
     html_string = """
-    <div class="tab-pane fade text-light p-2 mb-3" id="pane-TICKER" role="tabpanel" aria-labelledby="tab-TICKER">
+    <div class="tab-pane fade text-light p-2 mb-5" id="pane-TICKER" role="tabpanel" aria-labelledby="tab-TICKER">
         <h5>COMPANY (TICKER)</h5>
         <div class="container p-0">
             <div class="row">
 
                 <!-- Medium and Large -->
                 <div class="col-5 d-none d-md-block">
-                    <b>Regular Market Price:</b> CURR_PRICE 
-                    <div class="text-danger d-inline small"> DIFF </div><br>
-                    <b>Previous Close:</b> PREV_CLOSE <br>
+                    <b>Regular Market Price:</b> 
+                    <div class="d-inline" id="price-TICKER">
+                        CURR_PRICE 
+                    </div>
+                    <div class="text-danger d-inline small" id="diff-TICKER"> DIFF </div><br>
+                    <b>Previous Close:</b> 
+                    <div class="d-inline" id="prev-close-TICKER">
+                        PREV_CLOSE 
+                    </div>
+                    <br>
                     <div class="center-div">
                         <b>Last 14 Previous Closings: </b>
                         <!-- Modal button -->
@@ -379,11 +386,10 @@ def build_panes(stock_data, news_data):
                     </div>
                 </div>
 
-                <hr>
-
                 <!-- News -->
                 <!-- Medium and large -->
                 <div class="col-12">
+                    <hr>
                     <h5>COMPANY in the News</h5>
 
                     <card class="card bg-dark text-light border-secondary">

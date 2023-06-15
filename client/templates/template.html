@@ -35,11 +35,11 @@
         <div class="navbar-collapse collapse justify-content-stretch links" id="navbarCollapse">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">How it works</a>
+                    <a class="nav-link" href="{{ request.host_url.rstrip('/') + url_for('client.how_it_works') }}" target="_blank">How it works</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="https://github.com/EricLin-jpg/Market-Sentiment">
+                    <a class="nav-link" href="https://github.com/EricLin-jpg/Market-Sentiment" target="_blank">
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"
                             class="bi bi-github" viewBox="0 0 16 16">
                             <path
@@ -81,15 +81,19 @@
                     class="container text-center border border-2 border-success rounded text-light mt-2 p-1 d-none d-md-block">
                     <div class="row">
                         <div class="col-4">
-                            <b>Current prices updated:</b><br>
-                            {{ current_prices_update_time }}
+                            <b>Regular market prices updated:</b>
+                            <div id="current_prices_update_time">
+                                {{ current_prices_update_time }}
+                            </div>
                         </div>
                         <div class="col-4">
-                            <b>Previous closings prices updated:</b><br>
-                            {{ previous_closing_prices_update_time }}
+                            <b>Previous closings prices updated:</b>
+                            <div id="previous_closing_prices_update_time">
+                                {{ previous_closing_prices_update_time }}
+                            </div>
                         </div>
                         <div class="col-4">
-                            <b>News updated:</b><br>
+                            <b>Recent news updated:</b><br>
                             {{ news_update_time }}
                         </div>
                     </div>
@@ -97,8 +101,37 @@
 
                 <!-- Stocks content -->
                 <div class="tab-content border border-secondary border-2 rounded p-2 mt-2" id="stocks-panes">
-                    <div class="tab-pane fade text-light active show" id="start-pane" role="tabpanel"
-                        aria-labelledby="start-tab">Starting Text</div>
+                    <div class="tab-pane fade text-light active show p-2 mb-5" id="start-pane" role="tabpanel"
+                        aria-labelledby="start-tab">
+                        <h4>Market Sentiment</h4>
+                        Welcome to Market Sentiment! This is a tool that allows you to see the sentiment of the market
+                        by looking at the recent news (the past 14 days) of the stocks located at the left navigation
+                        bar and calculating a score from these news articles. 
+                        <hr>
+                        <h5>Stock Data</h5>
+                        To get started, click on any of the stocks on the left navigation bar. In each stock's page, you
+                        can see the regular market price, the previous close, and the previous closings for the past 14 days.
+                        You can also see analysts' recommendations for the stock. These information are all provided by 
+                        Yahoo Finance through 
+                        <a href="https://pypi.org/project/yahooquery/" target="_blank">Yahooquery</a>.
+                        <hr>
+                        <h5>News Data</h5>
+                        The news data is provided by Marketaux through their
+                        <a href="https://www.marketaux.com/" target="_blank">API</a>. 
+                        The API provides the news articles for the past 14 days for each stock and each individual
+                        news' sentiment. To calculate the sentiment of each stock with all the news combined, see 
+                        <a href="{{ request.host_url.rstrip('/') + url_for('client.how_it_works') }}" target="_blank">how it works</a>!
+                        <hr>
+                        <h5>This website is created with</h5>
+                        <div class="list-group list-group-flush">
+                            <a href="https://getbootstrap.com/" target="_blank" class="list-group-item bg-dark text-light">Bootstrap - Frontend</a>
+                            <a href="https://www.chartjs.org/" target="_blank" class="list-group-item bg-dark text-light">Chart.js - Charts</a>
+                            <a href="https://flask.palletsprojects.com/en/2.3.x/" target="_blank" class="list-group-item bg-dark text-light">Flask - Backend</a>
+                            <a href="https://pypi.org/project/yahooquery/" target="_blank" class="list-group-item bg-dark text-light">Yahooquery - Stock data API</a>
+                            <a href="https://www.marketaux.com/" target="_blank" class="list-group-item bg-dark text-light">Marketaux - News data API</a>
+                            <a href="https://firebase.google.com/docs/database" target="_blank" class="list-group-item bg-dark text-light">Firebase Realtime Database - Database</a>
+                        </div>
+                    </div>
 
                     <!-- Tab panes -->
                     {{ panes | safe }}
@@ -116,6 +149,8 @@
 
         {{ sent_charts_script | safe }}
     </script>
+
+    <script src="update.js"></script>
 </body>
 
 </html>
