@@ -7,6 +7,9 @@ function updatePrices() {
         .then((response) => response.json())
         .then((data) => {
 
+        // update the time of the last update
+        data.meta.current_prices_date_logged = data.meta.current_prices_date_logged.split(".")[0];
+        data.meta.closings_date_logged = data.meta.closings_date_logged.split(".")[0];
         document.getElementById("current_prices_update_time").textContent = data.meta.current_prices_date_logged;
         document.getElementById("previous_closing_prices_update_time").textContent = data.meta.closings_date_logged;
 
@@ -16,6 +19,8 @@ function updatePrices() {
             let previousClosingPrice = data["data"][ticker]["previous_closing_price"];
             let change = currentPrice - previousClosingPrice;
             let changePercentage = (change / previousClosingPrice) * 100;
+            currentPrice = currentPrice.toFixed(2);
+            previousClosingPrice = previousClosingPrice.toFixed(2);
             change = change.toFixed(2);
             changePercentage = changePercentage.toFixed(2);
 

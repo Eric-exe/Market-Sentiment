@@ -127,6 +127,7 @@ class Stock:
                 timedelta(seconds=15) and
                 datetime.now() - self.data.closings_date_logged <=
                 timedelta(minutes=60)):
+            print("Using cached stock data", flush=True)
             return True
         
         # check if the stock data in firebase is recent

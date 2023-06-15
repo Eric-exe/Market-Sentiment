@@ -224,6 +224,7 @@ class News:
         # first, check if the data we have is recent
         if (self.data.news_is_complete and
                 datetime.now() - self.data.news_date_logged_all < timedelta(hours=24)):
+            print("Using cached news data", flush=True)
             return True
 
         meta = database.get_news_meta()
