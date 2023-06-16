@@ -30,15 +30,23 @@
 
         const iframe = document.getElementById('content-iframe');
 
-        fetch('/load-index')
-            .then(response => response.text())
-            .then(data => {
-                // Replace the loading page content with the main page content
-                iframe.srcdoc = data;
-                iframe.style.display = 'block';
-                document.getElementById('loading-status').style.display = 'none';
-                document.getElementById('title').innerHTML = 'Market Sentiment';
-            });
+        function fetchIndex() {
+            fetch('/load-index')
+                .then(response => response.text())
+                .then(data => {
+                    // Replace the loading page content with the main page content
+                    iframe.srcdoc = data;
+                    iframe.style.display = 'block';
+                    document.getElementById('loading-status').style.display = 'none';
+                    document.getElementById('title').innerHTML = 'Market Sentiment';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    setTimeout(fetchIndex, 1000); // Try again in 1 second
+                });
+        }
+
+        fetchIndex();
 
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
