@@ -195,7 +195,7 @@ class News:
             "news_is_complete": str(self.data.news_is_complete),
             "news_date_logged_all": str(self.data.news_date_logged_all)
         }
-
+        
         database.add_news_meta(meta)
 
     def get_news_data(self, request_time):

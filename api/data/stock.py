@@ -37,10 +37,10 @@ class Stock:
         """Save the previous closing prices of the companies."""
 
         # check if we already have logged the previous closing prices
-        # update every 60 minutes
+        # update every 30 minutes
         if (self.data.closings_date_logged is None or
                 datetime.now() - self.data.closings_date_logged >=
-                timedelta(minutes=60)):
+                timedelta(minutes=30)):
 
             # process the closing prices
             ticker_prices = self.data.tickers_info.price
@@ -63,17 +63,19 @@ class Stock:
 
                 self.data.previous_closing[ticker] = ticker_prices[ticker]["regularMarketPreviousClose"]
 
-                # save the analyst recommendations
-                # Because the recommendations are not updated as frequently, we
-                # only update it every 60 minutes. Even then, it is overkill.
-                self.save_analyst_recommendations(ticker)
+            # save the analyst recommendations
+            # Because the recommendations are not updated as frequently, we
+            # only update it every 30 minutes. Even then, it is overkill.
+            self.save_analyst_recommendations()
 
-    def save_analyst_recommendations(self, ticker):
+    def save_analyst_recommendations(self):
         """Gets the analyst recommmendations from the API and saves it to the data."""
             
-        recommendations = Ticker(ticker).recommendation_trend
-        recommendations = recommendations.iloc[0][["strongBuy", "buy", "hold", "sell", "strongSell"]].to_dict()
-        self.data.analyst_recommendations[ticker] = recommendations
+        for ticker in self.data.tickers:
+            recommendations = self.data.tickers_info.recommendation_trend.loc[ticker]
+            recommendations = recommendations.iloc[0][["strongBuy", "buy", "hold", "sell", "strongSell"]].to_dict()
+            self.data.analyst_recommendations[ticker] = recommendations
+        
 
     def save_current_prices(self):
         """Save the current prices of the companies. Should update every 15 seconds."""
@@ -123,7 +125,7 @@ class Stock:
                 datetime.now() - self.data.current_prices_date_logged <=
                 timedelta(seconds=15) and
                 datetime.now() - self.data.closings_date_logged <=
-                timedelta(minutes=60)):
+                timedelta(minutes=30)):
             print("Using cached stock data", flush=True)
             return True
         
@@ -169,6 +171,7 @@ class Stock:
 
         # if both data are recent, we don't need to update the data
         if (datetime.now() - self.data.current_prices_date_logged <= timedelta(seconds=15) and
-                datetime.now() - self.data.closings_date_logged <= timedelta(minutes=60)):
+                datetime.now() - self.data.closings_date_logged <= timedelta(minutes=30)):
             return True
         return False # we need to update the data
+    

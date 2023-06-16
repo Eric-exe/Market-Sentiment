@@ -1,6 +1,5 @@
 """Main file for the API."""
 
-import os
 import json
 import threading
 from datetime import datetime, timedelta
@@ -29,6 +28,9 @@ def update_stock_data(request_time):
     if not stock.load_stock_data(db):
         stock.save_closings_prices()
         stock.save_current_prices()
+
+        # separate db update from the rest of the code
+        # this is so that the stock data will only update when necessary
         response = stock.get_stock_data(request_time)
         db.update_stock_data(response)
     else:
@@ -38,11 +40,11 @@ def update_stock_data(request_time):
 
 def update_news_data():
     """Update the news data."""
-    if not news.load_news_data(db):
+    if not news.load_news_data(db): 
         with lock:
             # only one thread can update the news data at a time.
             # this saves API calls
-            news.save_news(db)
+            news.save_news(db) # save the news data to the database
 
 # ==============================================================================
 

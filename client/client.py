@@ -20,11 +20,16 @@ def index():
 @client_bp.route("/load-index")
 def load_index():
     """Return the index page."""
+    print("Loading index...", flush=True)
     stock_api_url = request.host_url.rstrip('/') + url_for("API.get_stock")
     news_api_url = request.host_url.rstrip('/') + url_for("API.get_news")
 
+    print("GET stock data at " + stock_api_url, flush=True)
     stock_data = requests.get(stock_api_url).json()
+    print("Stock data loaded", flush=True)
+    print("GET news data at " + news_api_url, flush=True)
     news_data = requests.get(news_api_url).json()
+    print("News data loaded", flush=True)
     
     return render_template("template.html", 
                            buttons=html_builder.build_buttons(stock_data["data"]),

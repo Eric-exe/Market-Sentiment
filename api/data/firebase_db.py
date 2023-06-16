@@ -1,6 +1,7 @@
 """This file connects to the Firebase database and saves the data to Firebase realtime database."""
 
 import os
+import threading
 from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials
@@ -39,6 +40,11 @@ class FirebaseDB:
 # ==============================================================================
 
     def update_stock_data(self, data):
+        """Update the stock data in the Firebase database by creating a thread."""
+        thread = threading.Thread(target=self.update_stock_data_thread, args=(data,))
+        thread.start()
+
+    def update_stock_data_thread(self, data):
         """Update the stock data in the Firebase database."""
         self.db_ref.update({"stock" : data})
 
@@ -53,10 +59,20 @@ class FirebaseDB:
 # ==============================================================================
 
     def add_news_data(self, ticker, data):
+        """Add the news data to the Firebase database by creating a thread."""
+        thread = threading.Thread(target=self.add_news_data_thread, args=(ticker, data))
+        thread.start()
+
+    def add_news_data_thread(self, ticker, data):
         """Add the news data to the Firebase database."""
         self.db_ref.child("news").child("data").child(ticker).set(data)
-    
+
     def add_news_meta(self, data):
+        """Add the news metadata to the Firebase database by creating a thread."""
+        thread = threading.Thread(target=self.add_news_meta_thread, args=(data,))
+        thread.start()
+    
+    def add_news_meta_thread(self, data):
         """Add the news metadata to the Firebase database."""
         self.db_ref.child("news").child("meta").set(data)
 

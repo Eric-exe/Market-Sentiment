@@ -31,9 +31,11 @@
         const iframe = document.getElementById('content-iframe');
 
         function fetchIndex() {
+            console.log("Fetching index...");
             fetch('/load-index')
                 .then(response => response.text())
                 .then(data => {
+                    console.log("Index loaded");
                     // Replace the loading page content with the main page content
                     iframe.srcdoc = data;
                     iframe.style.display = 'block';
