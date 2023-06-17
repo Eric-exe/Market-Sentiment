@@ -10,7 +10,8 @@ def build_buttons(stock_data):
     res = ""
 
     html_string = """
-    <button class="nav-link mb-1" id="tab-TICKER" data-bs-toggle="pill" data-bs-target="#pane-TICKER" type="button" role="tab" aria-controls="pane-TICKER" aria-selected="false">
+    <button class="nav-link mb-1" id="tab-TICKER" data-bs-toggle="pill" data-bs-target="#pane-TICKER"
+        type="button" role="tab" aria-controls="pane-TICKER" aria-selected="false">
         <div class="row text-left fw-bold">
             <div class="col-4 d-none d-md-block">TICKER</div>
             <div class="col-4 d-none d-md-block" id="stocks-tab-price-TICKER">PRICE</div>
@@ -309,7 +310,9 @@ def build_panes(stock_data, news_data):
                     <div class="center-div">
                         <b>Last 14 Previous Closings: </b>
                         <!-- Modal button -->
-                        <button type="button" class="btn btn-outline-primary py-0 px-3 mx-2" data-bs-toggle="modal" data-bs-target="#modal-TICKER">Show</button>
+                        <button type="button" class="btn btn-outline-primary py-0 px-3 mx-2" data-bs-toggle="modal" data-bs-target="#modal-TICKER">
+                            Show
+                        </button>
                     </div>
                 </div>
 
@@ -321,7 +324,9 @@ def build_panes(stock_data, news_data):
                     <b>Last 14 Previous Closings: </b>
                     <div class="center-div">
                         <!-- Modal button -->
-                        <button type="button" class="btn btn-outline-primary py-0 px-3 mx-0 mb-1" data-bs-toggle="modal" data-bs-target="#modal-TICKER">Show</button>
+                        <button type="button" class="btn btn-outline-primary py-0 px-3 mx-0 mb-1" data-bs-toggle="modal" data-bs-target="#modal-TICKER">
+                            Show
+                        </button>
                     </div>
                 </div>
 
@@ -418,32 +423,44 @@ def build_panes(stock_data, news_data):
                         <div class="card-header border-secondary">
                             <ul class="nav nav-pills card-header-pills nav-fill">
                                 <li class="nav-item mx-2">
-                                    <button class="nav-link active" id="news-tab-all-TICKER" data-bs-toggle="pill" data-bs-target="#news-all-TICKER" type="button" role="tab" aria-controls="news-all-TICKER" aria-selected="true">All</button>
+                                    <button class="nav-link active" id="news-tab-all-TICKER" data-bs-toggle="pill" data-bs-target="#news-all-TICKER"
+                                    type="button" role="tab" aria-controls="news-all-TICKER" aria-selected="true">
+                                        All
+                                    </button>
                                 </li>
                                 <li class="nav-item mx-2">
-                                    <button class="nav-link" id="news-tab-positive-TICKER" data-bs-toggle="pill" data-bs-target="#news-positive-TICKER" type="button" role="tab" aria-controls="news-positive-TICKER" aria-selected="false">Positive</button>
+                                    <button class="nav-link" id="news-tab-positive-TICKER" data-bs-toggle="pill" data-bs-target="#news-positive-TICKER"
+                                    type="button" role="tab" aria-controls="news-positive-TICKER" aria-selected="false">
+                                        Positive
+                                    </button>
                                 </li>
                                 <li class="nav-item mx-2">
-                                    <button class="nav-link" id="news-tab-negative-TICKER" data-bs-toggle="pill" data-bs-target="#news-negative-TICKER" type="button" role="tab" aria-controls="news-negative-TICKER" aria-selected="false">Negative</button>
+                                    <button class="nav-link" id="news-tab-negative-TICKER" data-bs-toggle="pill" data-bs-target="#news-negative-TICKER"
+                                        type="button" role="tab" aria-controls="news-negative-TICKER" aria-selected="false">
+                                        Negative
+                                    </button>
                                 </li>
                             </ul>
                         </div>
 
                         <div class="card-body">
                             <div class="tab-content" id="news-panes-TICKER">
-                                <div class="tab-pane fade text-light show active mb-3" id="news-all-TICKER" role="tabpanel" aria-labelledby="news-tab-all-TICKER">
+                                <div class="tab-pane fade text-light show active mb-3" id="news-all-TICKER"
+                                    role="tabpanel" aria-labelledby="news-tab-all-TICKER">
 
                                     ALL_NEWS
 
                                 </div>
 
-                                <div class="tab-pane fade text-light mb-3" id="news-positive-TICKER" role="tabpanel" aria-labelledby="news-tab-positive-TICKER">
+                                <div class="tab-pane fade text-light mb-3" id="news-positive-TICKER"
+                                    role="tabpanel" aria-labelledby="news-tab-positive-TICKER">
                                     
                                     POS_NEWS
 
                                 </div>
 
-                                <div class="tab-pane fade text-light mb-3" id="news-negative-TICKER" role="tabpanel" aria-labelledby="news-tab-negative-TICKER">
+                                <div class="tab-pane fade text-light mb-3" id="news-negative-TICKER"
+                                    role="tabpanel" aria-labelledby="news-tab-negative-TICKER">
                                     
                                     NEG_NEWS
                                 

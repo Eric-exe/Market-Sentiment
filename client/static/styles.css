@@ -1,62 +1,74 @@
-* {
-    overflow-x: hidden;
-    overflow-y: hidden; 
+*
+{
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
-body {
-    background-color: #212529;
+body
+{
+  background-color: #212529;
 }
 
-iframe {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
+iframe
+{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 
 #stocks-tabs .nav-link.active,
-.card-header .nav-link.active {
-    background-color: #212529;
-    border: 2px solid #0d6efd;
+.card-header .nav-link.active
+{
+  background-color: #212529;
+  border: 2px solid #0d6efd;
 }
 
 #stocks-tabs .nav-link:not(.active),
-.card-header .nav-link:not(.active) {
-    background-color: #212529; 
-    color: darkgray;
-    opacity: 0.75;
+.card-header .nav-link:not(.active)
+{
+  background-color: #212529;
+  color: darkgray;
+  opacity: 0.75;
 }
 
-.bg-darker {
-    background-color: #111314;
+.bg-darker
+{
+  background-color: #111314;
 }
 
-.navbar-brand {
-    font-weight: bold;
-    display: flex;
-    align-items: center;
+.navbar-brand
+{
+  font-weight: bold;
+  display: flex;
+  align-items: center;
 }
 
-.center-div {
-    display: flex;
-    align-items: center;
+.center-div
+{
+  display: flex;
+  align-items: center;
 }
 
-.sentiment-text {
-    display: inline-block;
-    vertical-align: top;
+.sentiment-text
+{
+  display: inline-block;
+  vertical-align: top;
 }
 /* Dark mode scrollbar */
-::-webkit-scrollbar {
-    width: 10px;
+::-webkit-scrollbar
+{
+  width: 10px;
 }
 
-::-webkit-scrollbar-track {
-    background-color: #333;
+::-webkit-scrollbar-track
+{
+  background-color: #333;
 }
 
-::-webkit-scrollbar-thumb {
-    background-color: #666;
+::-webkit-scrollbar-thumb
+{
+  background-color: #666;
 }

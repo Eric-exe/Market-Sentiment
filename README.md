@@ -14,20 +14,20 @@ This website is hosted on [Render](https://render.com/docs/free) using Free Web 
 Market Sentiment is a web app created with Flask and Bootstrap. It uses Yahooquery to fetch the latest stock data and Marketaux to fetch the latest news on said stock. The data is then stored in Firebase Realtime Database and relevant information is displayed on the web app. 
 
 ### Features
-- Realtime stock data
-- Realtime stock news
-- Realtime stock sentiment
+-  Realtime stock data
+-  Realtime stock news
+-  Realtime stock sentiment
 
 ### Sentiment Analysis
 Marketaux's API actually provides the sentiment score for each news, ranging from `-1` to `1`. However, the free version of the API only allows 100 requests per day. To get around this, Market Sentiment sends 6 requests per stock, each request targetting a sentiment range and fetching the news count in that range.
 
 The ranges are as follows:
-- `0.15` to `0.39` - Weak Positive
-- `0.4` to `0.69` - Moderate Positive
-- `0.7` to `1` - Strong Positive
-- `-0.15` to `-0.39` - Weak Negative
-- `-0.4` to `-0.69` - Moderate Negative
-- `-0.7` to `-1` - Strong Negative
+-  `0.15` to `0.39` - Weak Positive
+-  `0.4` to `0.69` - Moderate Positive
+-  `0.7` to `1` - Strong Positive
+-  `-0.15` to `-0.39` - Weak Negative
+-  `-0.4` to `-0.69` - Moderate Negative
+-  `-0.7` to `-1` - Strong Negative
 
 The sentiment score is then calculated using the following formula:
 ```python
@@ -62,13 +62,13 @@ To run this project, you will need to add the following environment variables to
 
 In addition, you will need to add `serviceAccountKey.json` to the root directory of this project.
 To get `serviceAccountKey.json`:
-1. Create your Firebase project
-3. Click on the project
-4. Click on the gear icon and select Project Settings
-5. Click on the Service Accounts tab
-6. Click on the Generate new private key button
-7. Rename the downloaded JSON file to `serviceAccountKey.json`
-8. Place the `serviceAccountKey.json file` in the root directory of the project
+1.  Create your Firebase project
+3.  Click on the project
+4.  Click on the gear icon and select Project Settings
+5.  Click on the Service Accounts tab
+6.  Click on the Generate new private key button
+7.  Rename the downloaded JSON file to `serviceAccountKey.json`
+8.  Place the `serviceAccountKey.json file` in the root directory of the project
 
 
 ## Run Locally
