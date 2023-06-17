@@ -80,8 +80,8 @@ class News:
         articles = {}
 
         # send the requests
-        for i in range(len(urls)):
-            response = requests.get(urls[i], timeout=60)
+        for i, url in enumerate(urls):
+            response = requests.get(url, timeout=60)
 
             if response.status_code != 200:
                 print("Error: " + str(response.status_code))
@@ -151,9 +151,15 @@ class News:
             int(self.sentiment_weight[2])
 
         # normalize the sentiment score and add the extra bayesian values
-        sentiment_score /= ((data["weak_positive"] + data["weak_negative"]) * int(self.sentiment_weight[0]) +
-                            (data["moderate_positive"] + data["moderate_negative"]) * int(self.sentiment_weight[1]) +
-                            (data["strong_positive"] + data["strong_negative"]) * int(self.sentiment_weight[2]) +
+        sentiment_score /= ((data["weak_positive"] + data["weak_negative"])
+                            * int(self.sentiment_weight[0]) +
+
+                            (data["moderate_positive"] + data["moderate_negative"])
+                            * int(self.sentiment_weight[1]) +
+
+                            (data["strong_positive"] + data["strong_negative"])
+                            * int(self.sentiment_weight[2]) +
+
                             int(self.bayesian_extra_values))
 
         return sentiment_score
@@ -165,19 +171,21 @@ class News:
         # check if the datetime is defined
         if (self.data.news_date_logged_all is not None and
                 datetime.now() - self.data.news_date_logged_all <= timedelta(hours=24) and
-                self.data.news_is_complete == True):
+                self.data.news_is_complete):
             return
 
         for ticker in self.data.tickers:
             # fetch from firebase first
             ticker_data = database.get_news_data_ticker(ticker)
             # check if the data is up to date
-            if ticker_data is not None and ticker_data.get("news_date_logged") != None:
+            if ticker_data is not None and ticker_data.get("news_date_logged") is not None:
 
-                date = datetime.strptime(ticker_data["news_date_logged"], "%Y-%m-%d %H:%M:%S.%f")
+                date = datetime.strptime(
+                    ticker_data["news_date_logged"], "%Y-%m-%d %H:%M:%S.%f")
 
                 if datetime.now() - date < timedelta(hours=24):
-                    self.data.news[ticker] = dict_compress.decompress_data(ticker_data["news_compressed"])
+                    self.data.news[ticker] = dict_compress.decompress_data(
+                        ticker_data["news_compressed"])
                     self.data.news_count[ticker] = ticker_data["news_count"]
                     self.data.sentiment[ticker] = ticker_data["sentiment"]
                     self.data.news_date_logged[ticker] = ticker_data["news_date_logged"]
@@ -195,7 +203,7 @@ class News:
             "news_is_complete": str(self.data.news_is_complete),
             "news_date_logged_all": str(self.data.news_date_logged_all)
         }
-        
+
         database.add_news_meta(meta)
 
     def get_news_data(self, request_time):
@@ -207,7 +215,8 @@ class News:
 
         response["meta"]["request_time"] = request_time
         response["meta"]["news_is_complete"] = str(self.data.news_is_complete)
-        response["meta"]["news_date_logged_all"] = str(self.data.news_date_logged_all)
+        response["meta"]["news_date_logged_all"] = str(
+            self.data.news_date_logged_all)
 
         for ticker in self.data.tickers:
             response["data"][ticker] = {
@@ -231,16 +240,16 @@ class News:
 
         if meta is None:
             return False
-        
+
         # check if the data is complete
         news_date_logged_all = meta.get("news_date_logged_all")
         if news_date_logged_all is None:
             return False
-        
+
         news_is_complete = meta.get("news_is_complete")
         if news_is_complete is None:
             return False
-        
+
         news_is_complete = bool(news_is_complete)
         if news_is_complete is False:
             return False
@@ -258,7 +267,8 @@ class News:
         for ticker in data:
             self.data.news_count[ticker] = data[ticker]["news_count"]
             self.data.sentiment[ticker] = data[ticker]["sentiment"]
-            self.data.news[ticker] = dict_compress.decompress_data(data[ticker]["news_compressed"])
+            self.data.news[ticker] = dict_compress.decompress_data(
+                data[ticker]["news_compressed"])
             self.data.news_date_logged[ticker] = data[ticker]["news_date_logged"]
 
         self.data.news_date_logged_all = news_date_logged_all

@@ -3,6 +3,7 @@
 from datetime import datetime
 from collections import OrderedDict
 
+
 def build_buttons(stock_data):
     """Builds the buttons for the web app"""
 
@@ -28,18 +29,21 @@ def build_buttons(stock_data):
             "PRICE", format(stock_data[ticker]["current_price"], ".2f"))
 
         # if the change is positive, add a plus sign and add a green color
-        change = (stock_data[ticker]["current_price"] - stock_data[ticker]["previous_closing_price"]) / stock_data[ticker]["previous_closing_price"] * 100
+        change = (stock_data[ticker]["current_price"] - stock_data[ticker]
+                  ["previous_closing_price"]) / stock_data[ticker]["previous_closing_price"] * 100
         if change > 0:
             temp_string = temp_string.replace(
                 "CHANGE", "+" + format(change, ".2f") + "%")
             temp_string = temp_string.replace("text-danger", "text-success")
         else:
-            temp_string = temp_string.replace("CHANGE", format(change, ".2f") + "%")
+            temp_string = temp_string.replace(
+                "CHANGE", format(change, ".2f") + "%")
 
         # add the string to the result
         res += temp_string
 
     return res
+
 
 def build_table(previous_closings):
     """Builds the table for panes modal"""
@@ -58,11 +62,13 @@ def build_table(previous_closings):
         temp_string = html_string
         # replace the data
         temp_string = temp_string.replace("DATE", date)
-        temp_string = temp_string.replace("PRICE", format(previous_closings[date], ".2f"))
+        temp_string = temp_string.replace(
+            "PRICE", format(previous_closings[date], ".2f"))
         # add the string to the result
         res += temp_string
-    
+
     return res
+
 
 def build_rec_charts_scripts(stock_data):
     """Builds the scripts for the rec charts"""
@@ -109,11 +115,16 @@ def build_rec_charts_scripts(stock_data):
         # values string
         temp_values_string = values_string
         temp_values_string = temp_values_string.replace("TICKER", ticker)
-        temp_values_string = temp_values_string.replace("STRONG_BUY", str(stock_data[ticker]["analyst_recommendations"]["strongBuy"]))
-        temp_values_string = temp_values_string.replace("NORM_BUY", str(stock_data[ticker]["analyst_recommendations"]["buy"]))
-        temp_values_string = temp_values_string.replace("HOLD", str(stock_data[ticker]["analyst_recommendations"]["hold"]))
-        temp_values_string = temp_values_string.replace("NORM_SELL", str(stock_data[ticker]["analyst_recommendations"]["sell"]))
-        temp_values_string = temp_values_string.replace("STRONG_SELL", str(stock_data[ticker]["analyst_recommendations"]["strongSell"]))
+        temp_values_string = temp_values_string.replace("STRONG_BUY", str(
+            stock_data[ticker]["analyst_recommendations"]["strongBuy"]))
+        temp_values_string = temp_values_string.replace(
+            "NORM_BUY", str(stock_data[ticker]["analyst_recommendations"]["buy"]))
+        temp_values_string = temp_values_string.replace("HOLD", str(
+            stock_data[ticker]["analyst_recommendations"]["hold"]))
+        temp_values_string = temp_values_string.replace("NORM_SELL", str(
+            stock_data[ticker]["analyst_recommendations"]["sell"]))
+        temp_values_string = temp_values_string.replace("STRONG_SELL", str(
+            stock_data[ticker]["analyst_recommendations"]["strongSell"]))
         res += temp_values_string
 
         # html string
@@ -125,8 +136,8 @@ def build_rec_charts_scripts(stock_data):
         temp_string = temp_string.replace("chart-recs", "chart-recs-sm")
         res += temp_string
 
-
     return res
+
 
 def build_sent_charts_scripts(news_data):
     """Builds the scripts for the sentiment charts"""
@@ -173,12 +184,18 @@ def build_sent_charts_scripts(news_data):
         # values string
         temp_values_string = values_string
         temp_values_string = temp_values_string.replace("TICKER", ticker)
-        temp_values_string = temp_values_string.replace("STRONG_POS", str(news_data[ticker]["news_count"]["strong_positive"]))
-        temp_values_string = temp_values_string.replace("NORM_POS", str(news_data[ticker]["news_count"]["moderate_positive"]))
-        temp_values_string = temp_values_string.replace("WEAK_POS", str(news_data[ticker]["news_count"]["weak_positive"]))
-        temp_values_string = temp_values_string.replace("WEAK_NEG", str(news_data[ticker]["news_count"]["weak_negative"]))
-        temp_values_string = temp_values_string.replace("NORM_NEG", str(news_data[ticker]["news_count"]["moderate_negative"]))
-        temp_values_string = temp_values_string.replace("STRONG_NEG", str(news_data[ticker]["news_count"]["strong_negative"]))
+        temp_values_string = temp_values_string.replace(
+            "STRONG_POS", str(news_data[ticker]["news_count"]["strong_positive"]))
+        temp_values_string = temp_values_string.replace(
+            "NORM_POS", str(news_data[ticker]["news_count"]["moderate_positive"]))
+        temp_values_string = temp_values_string.replace(
+            "WEAK_POS", str(news_data[ticker]["news_count"]["weak_positive"]))
+        temp_values_string = temp_values_string.replace(
+            "WEAK_NEG", str(news_data[ticker]["news_count"]["weak_negative"]))
+        temp_values_string = temp_values_string.replace(
+            "NORM_NEG", str(news_data[ticker]["news_count"]["moderate_negative"]))
+        temp_values_string = temp_values_string.replace(
+            "STRONG_NEG", str(news_data[ticker]["news_count"]["strong_negative"]))
         res += temp_values_string
 
         # html string
@@ -192,12 +209,13 @@ def build_sent_charts_scripts(news_data):
 
     return res
 
+
 def build_news_panes(news_data, ticker):
     """Builds the news panes for the web app"""
     res = {
-        "all" : {},
-        "positive" : "",
-        "negative" : ""
+        "all": {},
+        "positive": "",
+        "negative": ""
     }
 
     html_string = """
@@ -227,9 +245,11 @@ def build_news_panes(news_data, ticker):
             # we want to remove the T and everything after it
             news["published_at"] = news["published_at"].split("T")[0]
 
-            temp_string = temp_string.replace("NEWS_PUBLISHED", news["published_at"])
+            temp_string = temp_string.replace(
+                "NEWS_PUBLISHED", news["published_at"])
 
-            # the sentiments range from strong_positive to strong_negative. We want to group them into positive and negative
+            # the sentiments range from strong_positive to strong_negative.
+            # We want to group them into positive and negative
             if sentiment in ["strong_positive", "moderate_positive", "weak_positive"]:
                 # marketaux sometimes do have duplicate news. We want to remove them
                 if temp_string in res["positive"]:
@@ -241,25 +261,27 @@ def build_news_panes(news_data, ticker):
                 res["negative"] += temp_string
 
             # we will short the news by date. The most recent news will be at the top
-            # To do this, we can convert the date to a datetime object and then sort the list of news
+            # To do this, we can convert the date to a datetime object
+            # and then sort the list of news
             datetime_obj = datetime.strptime(news["published_at"], "%Y-%m-%d")
 
             if datetime_obj not in res["all"]:
                 res["all"][datetime_obj] = []
             res["all"][datetime_obj].append(temp_string)
-    
+
     # sort the news by date
     res["all"] = OrderedDict(sorted(res["all"].items(), reverse=True))
-    
+
     # convert the news into a string
     news = ""
     for date in res["all"]:
         for news_item in res["all"][date]:
             news += news_item
-    
+
     res["all"] = news
 
     return res
+
 
 def build_panes(stock_data, news_data):
     """Builds the panes for the web app"""
@@ -442,44 +464,63 @@ def build_panes(stock_data, news_data):
         # create a copy of the html string
         temp_string = html_string
         # replace the data
-        temp_string = temp_string.replace("TICKER", ticker) # should take care of most of the replacements
-        temp_string = temp_string.replace("COMPANY", stock_data[ticker]["company"])
-        temp_string = temp_string.replace("CURR_PRICE", format(stock_data[ticker]["current_price"], ".2f"))
+        # should take care of most of the replacements
+        temp_string = temp_string.replace("TICKER", ticker)
+        temp_string = temp_string.replace(
+            "COMPANY", stock_data[ticker]["company"])
+        temp_string = temp_string.replace("CURR_PRICE", format(
+            stock_data[ticker]["current_price"], ".2f"))
 
         # if the change is positive, add a plus sign and add a green color
-        change = (stock_data[ticker]["current_price"] - stock_data[ticker]["previous_closing_price"]) / stock_data[ticker]["previous_closing_price"] * 100
+        change = (stock_data[ticker]["current_price"] - stock_data[ticker]
+                  ["previous_closing_price"]) / stock_data[ticker]["previous_closing_price"] * 100
 
         # also calculate the difference between the current price and the previous close
-        difference = format(stock_data[ticker]["current_price"] - stock_data[ticker]["previous_closing_price"], ".2f")
+        difference = format(stock_data[ticker]["current_price"] -
+                            stock_data[ticker]["previous_closing_price"], ".2f")
         if change > 0:
-            temp_string = temp_string.replace("DIFF", "+" + difference + "&nbsp;(+" + format(change, ".2f") + "%)")
+            temp_string = temp_string.replace(
+                "DIFF", "+" + difference + "&nbsp;(+" + format(change, ".2f") + "%)")
             temp_string = temp_string.replace("text-danger", "text-success")
         else:
-            temp_string = temp_string.replace("DIFF", difference + "&nbsp;(" + format(change, ".2f") + "%)")
+            temp_string = temp_string.replace(
+                "DIFF", difference + "&nbsp;(" + format(change, ".2f") + "%)")
 
-        temp_string = temp_string.replace("PREV_CLOSE", format(stock_data[ticker]["previous_closing_price"], ".2f"))
+        temp_string = temp_string.replace("PREV_CLOSE", format(
+            stock_data[ticker]["previous_closing_price"], ".2f"))
 
         # build the table
-        temp_string = temp_string.replace("TABLE", build_table(stock_data[ticker]["closings_prices"]))
+        temp_string = temp_string.replace(
+            "TABLE", build_table(stock_data[ticker]["closings_prices"]))
 
         # remove the recommendations chart if there are no recommendations
         if sum(stock_data[ticker]["analyst_recommendations"].values()) == 0:
-            temp_string = temp_string.replace("<canvas id=\"chart-recs-" + ticker + "\"></canvas>", "")
-            temp_string = temp_string.replace("<b>Total recommendations:</b> TOTAL_RECS", "No data from Yahoo Finance available for this month :(")
+            temp_string = temp_string.replace(
+                "<canvas id=\"chart-recs-" + ticker + "\"></canvas>", "")
+            temp_string = temp_string.replace(
+                "<b>Total recommendations:</b> TOTAL_RECS",
+                "No data from Yahoo Finance available for this month :(")
 
             # small chart
-            temp_string = temp_string.replace("<canvas id=\"chart-recs-sm-" + ticker + "\"></canvas>", "")
+            temp_string = temp_string.replace(
+                "<canvas id=\"chart-recs-sm-" + ticker + "\"></canvas>", "")
         else:
-            temp_string = temp_string.replace("TOTAL_RECS", str(sum(stock_data[ticker]["analyst_recommendations"].values())))
+            temp_string = temp_string.replace("TOTAL_RECS", str(
+                sum(stock_data[ticker]["analyst_recommendations"].values())))
 
         # sentiment chart
         if sum(news_data[ticker]["news_count"].values()) == 0:
-            temp_string = temp_string.replace("<canvas id=\"chart-sent-" + ticker + "\"></canvas>", "")
-            temp_string = temp_string.replace("<b>Total news:</b> TOTAL_NEWS<br>", "No data from Marketaux API :(")
-            temp_string = temp_string.replace("<b>Sentiment:</b> <div class=\"sentiment-text\">SENTIMENT_VAL</div>", "")
+            temp_string = temp_string.replace(
+                "<canvas id=\"chart-sent-" + ticker + "\"></canvas>", "")
+            temp_string = temp_string.replace(
+                "<b>Total news:</b> TOTAL_NEWS<br>", "No data from Marketaux API :(")
+            temp_string = temp_string.replace(
+                "<b>Sentiment:</b> <div class=\"sentiment-text\">SENTIMENT_VAL</div>", "")
         else:
-            temp_string = temp_string.replace("TOTAL_NEWS", str(sum(news_data[ticker]["news_count"].values())))
-            temp_string = temp_string.replace("SENTIMENT_VAL", format(news_data[ticker]["sentiment"], ".5f"))
+            temp_string = temp_string.replace("TOTAL_NEWS", str(
+                sum(news_data[ticker]["news_count"].values())))
+            temp_string = temp_string.replace(
+                "SENTIMENT_VAL", format(news_data[ticker]["sentiment"], ".5f"))
 
         # news pane
         news_panes = build_news_panes(news_data, ticker)

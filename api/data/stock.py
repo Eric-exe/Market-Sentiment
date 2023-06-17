@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta
 from yahooquery import Ticker
 
-# TODO: Add recommendation trend to the stock data
 
 class Stock:
     """The class for getting the stock information."""
@@ -61,7 +60,8 @@ class Stock:
 
                 self.data.closings[ticker] = closing_prices
 
-                self.data.previous_closing[ticker] = ticker_prices[ticker]["regularMarketPreviousClose"]
+                previous_close = ticker_prices[ticker]["regularMarketPreviousClose"]
+                self.data.previous_closing[ticker] = previous_close
 
             # save the analyst recommendations
             # Because the recommendations are not updated as frequently, we
@@ -70,12 +70,12 @@ class Stock:
 
     def save_analyst_recommendations(self):
         """Gets the analyst recommmendations from the API and saves it to the data."""
-            
+
         for ticker in self.data.tickers:
             recommendations = self.data.tickers_info.recommendation_trend.loc[ticker]
-            recommendations = recommendations.iloc[0][["strongBuy", "buy", "hold", "sell", "strongSell"]].to_dict()
+            recommendations = recommendations.iloc[0][[
+                "strongBuy", "buy", "hold", "sell", "strongSell"]].to_dict()
             self.data.analyst_recommendations[ticker] = recommendations
-        
 
     def save_current_prices(self):
         """Save the current prices of the companies. Should update every 15 seconds."""
@@ -83,7 +83,7 @@ class Stock:
         if (self.data.current_prices_date_logged is None or
                 datetime.now() - self.data.current_prices_date_logged >=
                 timedelta(seconds=15)):
-            
+
             ticker_prices = self.data.tickers_info.price
             self.data.current_prices_date_logged = datetime.now()
             for ticker in self.data.tickers:
@@ -128,7 +128,7 @@ class Stock:
                 timedelta(minutes=30)):
             print("Using cached stock data", flush=True)
             return True
-        
+
         # check if the stock data in firebase is recent
         meta = database.get_stock_meta()
         if meta is None:
@@ -140,8 +140,10 @@ class Stock:
         if current_prices_date_logged is None or closings_date_logged is None:
             return False
 
-        current_prices_date_logged = datetime.strptime(current_prices_date_logged, "%Y-%m-%d %H:%M:%S.%f")
-        closings_date_logged = datetime.strptime(closings_date_logged, "%Y-%m-%d %H:%M:%S.%f")
+        current_prices_date_logged = datetime.strptime(
+            current_prices_date_logged, "%Y-%m-%d %H:%M:%S.%f")
+        closings_date_logged = datetime.strptime(
+            closings_date_logged, "%Y-%m-%d %H:%M:%S.%f")
 
         # if at least one of the data is recent, load the data
         if (datetime.now() - current_prices_date_logged > timedelta(seconds=15) and
@@ -173,5 +175,4 @@ class Stock:
         if (datetime.now() - self.data.current_prices_date_logged <= timedelta(seconds=15) and
                 datetime.now() - self.data.closings_date_logged <= timedelta(minutes=30)):
             return True
-        return False # we need to update the data
-    
+        return False  # we need to update the data

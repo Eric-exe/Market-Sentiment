@@ -2,7 +2,7 @@
 
 import json
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime
 from flask import Blueprint, Response
 
 from api.data import data
@@ -22,6 +22,7 @@ db = firebase_db.FirebaseDB()
 lock = threading.Lock()
 # ==============================================================================
 
+
 def update_stock_data(request_time):
     """Update the stock data."""
     response = None
@@ -38,15 +39,17 @@ def update_stock_data(request_time):
 
     return response
 
+
 def update_news_data():
     """Update the news data."""
-    if not news.load_news_data(db): 
+    if not news.load_news_data(db):
         with lock:
             # only one thread can update the news data at a time.
             # this saves API calls
-            news.save_news(db) # save the news data to the database
+            news.save_news(db)  # save the news data to the database
 
 # ==============================================================================
+
 
 @api_bp.route("/stock_data", methods=["GET"])
 def get_stock():

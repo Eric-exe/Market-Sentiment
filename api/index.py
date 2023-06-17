@@ -76,7 +76,8 @@ def main():
             To get the Marketaux API token, sign up at https://marketaux.com.\n\n
 
             To get the Firebase DB URL, sign up at https://firebase.google.com.\n
-            Create a project and add a realtime database. Then, copy the URL of the realtime database.\n\n
+            Create a project and add a realtime database.\n
+            Then, copy the URL of the realtime database.\n\n
 
             Place the .env file in the root directory of the project."""
         )
