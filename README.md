@@ -1,6 +1,6 @@
-# Market Sentiment
+# [Market Sentiment](https://market-sentiment.onrender.com)
 [![License](https://img.shields.io/github/license/EricLin-jpg/Market-Sentiment)](https://choosealicense.com/licenses/mit/)
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Fmarket-sentiment.onrender.com%2F)](https://market-sentiment.onrender.com/)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ded0b79511de4e9c8afc51d2fd7ee34e)](https://app.codacy.com/gh/EricLin-jpg/Market-Sentiment/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 ![Size](https://img.shields.io/github/repo-size/EricLin-jpg/Market-Sentiment)
 
 ---
