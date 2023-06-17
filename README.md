@@ -3,6 +3,14 @@
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fmarket-sentiment.onrender.com%2F)](https://market-sentiment.onrender.com/)
 ![Size](https://img.shields.io/github/repo-size/EricLin-jpg/Market-Sentiment)
 
+---
+
+**NOTE:**
+This website is hosted on [Render](https://render.com/docs/free) using Free Web Services.
+>Web Services on the free instance type are automatically spun down after 15 minutes of inactivity. When a new request for a free service comes in, Render spins it up again so it can process the request. <br><br>This will cause a delay in the response of the first request after a period of inactivity while the instance spins up.
+
+---
+
 Market Sentiment is a web app created with Flask and Bootstrap. It uses Yahooquery to fetch the latest stock data and Marketaux to fetch the latest news on said stock. The data is then stored in Firebase Realtime Database and relevant information is displayed on the web app. 
 
 ### Features
