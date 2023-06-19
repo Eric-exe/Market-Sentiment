@@ -68,7 +68,7 @@ To get `serviceAccountKey.json`:
 5.  Click on the Service Accounts tab
 6.  Click on the Generate new private key button
 7.  Rename the downloaded JSON file to `serviceAccountKey.json`
-8.  Place the `serviceAccountKey.json file` in the root directory of the project
+8.  Place the `serviceAccountKey.json` file in the root directory of the project
 
 
 ## Run Locally
