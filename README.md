@@ -115,6 +115,19 @@ Start the server
   python -m app
 ```
 
+## API
+Get stock data: 
+```bash
+GET /api/stock_data
+```
+
+<br>
+
+Get news data:
+```bash
+GET /api/news_data
+```
+
 ## Built With
 
 **Frontend:** [Bootstrap](https://getbootstrap.com/)
